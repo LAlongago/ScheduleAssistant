@@ -206,6 +206,6 @@ dotnet run --project .\src\ScheduleAssistant.Presentation\ScheduleAssistant.Pres
 - Full test run: **通过**; all four test projects started their test hosts.
 - WPF run: **待人工验证** until the five desktop checks above are observed and reported.
 - Remote CI: **待推送后验证**; this branch has not been pushed and no local result claims GitHub CI.
-- Final commit SHA: to be recorded after the documentation/source-fix commit is created.
+- Validated source/documentation commit SHA: `1f4766a7caec7b66e90ae65fac7d09190ba0d94c` (`DEV-001: validate local SDK and WPF build`).
 - SPIKE-001/SPIKE-002 and any later task must wait for WPF manual acceptance and subsequent
   push/CI review; this round does not authorize push, PR, merge, or reset.
