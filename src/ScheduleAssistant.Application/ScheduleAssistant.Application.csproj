@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>ScheduleAssistant.Application</RootNamespace>
+    <AssemblyName>ScheduleAssistant.Application</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ScheduleAssistant.Domain\ScheduleAssistant.Domain.csproj" />
+  </ItemGroup>
+</Project>

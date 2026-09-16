@@ -1,0 +1,22 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Tt]est[Rr]esults/
+
+# Visual Studio and IDE state
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Generated local tooling files
+*.DotSettings.user
+*.nupkg
+*.snupkg
+artifacts/
+
+# OS files
+.DS_Store
+Thumbs.db

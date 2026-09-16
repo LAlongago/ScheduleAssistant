@@ -1,0 +1,15 @@
+<Window x:Class="ScheduleAssistant.Presentation.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ScheduleAssistant"
+        Width="480"
+        Height="260"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="24">
+        <StackPanel VerticalAlignment="Center">
+            <TextBlock FontSize="24" Text="ScheduleAssistant" />
+            <TextBlock Margin="0,12,0,0" Text="DEV-001 skeleton is running." />
+            <TextBlock Margin="0,6,0,0" Text="Business features will be added in later task packages." TextWrapping="Wrap" />
+        </StackPanel>
+    </Grid>
+</Window>
