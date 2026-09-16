@@ -45,7 +45,7 @@ These are blocked results, not successful build/test results.
 - The targeted Assembly marker properties now return `System.Reflection.Assembly`.
 - CA1707 suppression exists only under `tests/.editorconfig`; no global suppression was added.
 - No database, migration, repository, business entity, ViewModel, or Windows integration implementation was added.
-- `git diff --check` passed for the source fix before documentation changes; it must be rerun after committing the report.
+- `git diff --check` passed for the complete source, handoff, and report patch before the final documentation commit.
 
 ## Test statistics and WPF result
 
