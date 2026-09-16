@@ -23,6 +23,21 @@ No business behavior, database migration, schema, table, repository, notificatio
 
 The WPF project sets `EnableWindowsTargeting` so a compatible SDK can perform a compile on a non-Windows build agent. Running the application, testing Windows App SDK notifications, tray behavior, Registry startup, single-instance IPC, and desktop-host behavior still requires Windows.
 
+If the SDK is installed in a user-local directory instead of the system installation location, configure it for the current PowerShell session before running the commands below. This does not modify system `PATH`, the registry, or other SDK installations:
+
+```powershell
+$dotnetRoot = 'E:\Dev\Tools\ScheduleAssistantDotnet'
+$env:PATH = "$dotnetRoot;$env:PATH"
+$env:DOTNET_ROOT = $dotnetRoot
+$env:DOTNET_CLI_HOME = Join-Path $env:TEMP 'ScheduleAssistantDotnetCliHome'
+$env:NUGET_PACKAGES = Join-Path $env:TEMP 'ScheduleAssistantNuGetPackages'
+$env:APPDATA = Join-Path $env:TEMP 'ScheduleAssistantAppData'
+Set-Location 'E:\Dev\Personal\Todo_list'
+dotnet --info
+```
+
+The `DOTNET_CLI_HOME`, `NUGET_PACKAGES`, and `APPDATA` overrides are useful on locked-down Windows profiles where the default user tool or NuGet directories are not writable. Omit them when the normal user profile is accessible.
+
 ## Build and test
 
 Run from the repository root:

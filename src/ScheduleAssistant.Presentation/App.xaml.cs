@@ -9,7 +9,7 @@ namespace ScheduleAssistant.Presentation;
 /// <summary>
 /// WPF composition root for the ScheduleAssistant desktop process.
 /// </summary>
-public partial class App : Application
+public partial class App : System.Windows.Application
 {
     private IHost? _host;
 
@@ -60,9 +60,12 @@ public partial class App : Application
 
     private static IHost BuildHost(string[] args)
     {
-        _ = typeof(ApplicationAssemblyMarker);
-
         var builder = Host.CreateApplicationBuilder(args);
+        if (ApplicationAssemblyMarker.DomainAssembly is null)
+        {
+            throw new InvalidOperationException("The Application assembly boundary is unavailable.");
+        }
+
         builder.Services.AddInfrastructure();
         builder.Services.AddSingleton<MainWindow>();
         return builder.Build();
