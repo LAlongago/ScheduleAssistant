@@ -233,3 +233,20 @@ the `dotnet run` command returned exit code `0`.
 - Remote CI: **待推送后验证**; the branch remains unpushed and no GitHub CI result is claimed.
 - The local DEV-001 validation gate is complete. Branch push and CI verification may proceed
   when separately authorized; SPIKE-001/SPIKE-002 still wait for CI green and merge to `main`.
+
+## Remote delivery attempt (2026-09-17)
+
+The user explicitly authorized pushing to `https://github.com/LAlongago/ScheduleAssistant.git`
+and merging `main` if CI is green. The local branch was clean at
+`e0ac2c560e14cbfbdd7ac6b5ee146fbc0887bc86`.
+
+| Operation | Exit code | Result |
+|---|---:|---|
+| `git push --set-upstream origin fix/dev-001-build-validation` (attempt 1) | 1 | HTTPS connection reset while accessing GitHub; no remote update observed. |
+| Same push (attempt 2) | 1 | Could not connect to `github.com:443` after approximately 21 seconds; no remote update observed. |
+| Read-only `curl.exe --fail --silent --show-error --location --head https://github.com/LAlongago/ScheduleAssistant` | 1 | Could not connect to `github.com:443` after approximately 21 seconds. |
+
+No authentication prompt, ref rejection, or CI run was reached. The branch remains local and
+unpushed; CI and merge have not started. The blocker is outbound HTTPS connectivity to GitHub,
+not a source/build/test failure. Once GitHub HTTPS access is restored, rerun the push, inspect
+the resulting workflow, and continue to merge only if every required check is green.
