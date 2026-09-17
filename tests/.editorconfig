@@ -1,0 +1,5 @@
+root = false
+
+[*.cs]
+# Behavior-oriented xUnit names intentionally use underscores. Keep CA1707 enabled for production code.
+dotnet_diagnostic.CA1707.severity = none

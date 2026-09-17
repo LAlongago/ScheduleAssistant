@@ -1,3 +1,4 @@
+using System.Reflection;
 using ScheduleAssistant.Domain;
 
 namespace ScheduleAssistant.Application;
@@ -10,5 +11,5 @@ public static class ApplicationAssemblyMarker
     /// <summary>
     /// Gets the Domain assembly that Application is allowed to depend on.
     /// </summary>
-    public static Type DomainAssembly => typeof(DomainAssemblyMarker).Assembly;
+    public static Assembly DomainAssembly => typeof(DomainAssemblyMarker).Assembly;
 }

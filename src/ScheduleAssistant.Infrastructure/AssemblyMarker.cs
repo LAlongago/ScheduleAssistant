@@ -1,3 +1,4 @@
+using System.Reflection;
 using ScheduleAssistant.Application;
 using ScheduleAssistant.Domain;
 
@@ -11,10 +12,10 @@ public static class InfrastructureAssemblyMarker
     /// <summary>
     /// Gets the Application assembly consumed by Infrastructure adapters.
     /// </summary>
-    public static Type ApplicationAssembly => typeof(ApplicationAssemblyMarker).Assembly;
+    public static Assembly ApplicationAssembly => typeof(ApplicationAssemblyMarker).Assembly;
 
     /// <summary>
     /// Gets the Domain assembly consumed by Infrastructure adapters.
     /// </summary>
-    public static Type DomainAssembly => typeof(DomainAssemblyMarker).Assembly;
+    public static Assembly DomainAssembly => typeof(DomainAssemblyMarker).Assembly;
 }
