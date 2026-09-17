@@ -1,0 +1,164 @@
+<Window x:Class="ScheduleAssistant.Spike002.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SPIKE-002 Desktop Host"
+        Width="500"
+        Height="470"
+        MinWidth="390"
+        MinHeight="330"
+        Left="96"
+        Top="96"
+        WindowStartupLocation="Manual"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        ShowInTaskbar="True"
+        Topmost="False"
+        Background="Transparent"
+        Closing="OnWindowClosing">
+    <Border Background="{StaticResource PageBrush}"
+            BorderBrush="#C9D1D9"
+            BorderThickness="1"
+            CornerRadius="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border x:Name="DragSurface"
+                    Grid.Row="0"
+                    Padding="16,12"
+                    Background="{StaticResource AccentBrush}"
+                    MouseLeftButtonDown="OnDragSurfaceMouseLeftButtonDown">
+                <DockPanel LastChildFill="True">
+                    <Button DockPanel.Dock="Right"
+                            Width="30"
+                            Height="28"
+                            Margin="8,0,0,0"
+                            Padding="0"
+                            Background="#22FFFFFF"
+                            BorderBrush="#66FFFFFF"
+                            Foreground="White"
+                            Content="×"
+                            ToolTip="关闭原型"
+                            Click="OnCloseClick"
+                            AutomationProperties.Name="关闭原型" />
+                    <StackPanel>
+                        <TextBlock Foreground="White"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Text="SPIKE-002 · Desktop Host" />
+                        <TextBlock Margin="0,3,0,0"
+                                   Foreground="#EAF1FF"
+                                   Text="可交互模拟看板 · 仅使用临时内存任务" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <StackPanel Grid.Row="1" Margin="16,14,16,8">
+                <TextBlock Foreground="{StaticResource InkBrush}"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Text="{Binding CurrentDateText}" />
+                <TextBlock Margin="0,4,0,0"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="看板内容不连接正式数据库，不写入用户数据目录。" />
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="2"
+                          Margin="16,0,16,8"
+                          VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Tasks}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,0,8"
+                                    Padding="10"
+                                    Background="{StaticResource CardBrush}"
+                                    BorderBrush="#DCE2E7"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox Grid.Column="0"
+                                              Margin="0,2,10,0"
+                                              VerticalAlignment="Top"
+                                              IsChecked="{Binding IsCompleted, Mode=TwoWay}"
+                                              AutomationProperties.Name="{Binding Title}" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Foreground="{StaticResource InkBrush}"
+                                                   FontWeight="SemiBold"
+                                                   Text="{Binding Title}"
+                                                   TextWrapping="Wrap" />
+                                        <StackPanel Margin="0,5,0,0" Orientation="Horizontal">
+                                            <TextBlock Foreground="{StaticResource MutedBrush}" Text="Deadline  " />
+                                            <TextBlock Foreground="{StaticResource InkBrush}" Text="{Binding DeadlineText}" />
+                                            <TextBlock Margin="10,0,0,0"
+                                                       Foreground="{StaticResource WarningBrush}"
+                                                       Text="{Binding DeadlineStateText}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <Border Grid.Row="3"
+                    Margin="16,0,16,8"
+                    Padding="10"
+                    Background="#EEF3FF"
+                    BorderBrush="#C6D5F7"
+                    BorderThickness="1"
+                    CornerRadius="5">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock Foreground="{StaticResource MutedBrush}" Text="当前宿主模式" />
+                        <TextBlock Margin="8,0,0,0"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding HostModeText}" />
+                    </DockPanel>
+                    <TextBlock Margin="0,4,0,0"
+                               Foreground="{StaticResource InkBrush}"
+                               Text="{Binding HostDiagnosticText}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Margin="0,4,0,0"
+                               Foreground="{StaticResource MutedBrush}"
+                               Text="{Binding HostDetailsText}" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Row="4" Margin="16,0,8,12">
+                <WrapPanel>
+                    <Button Content="进入嵌入模式"
+                            Click="OnAttachClick"
+                            AutomationProperties.Name="进入嵌入模式" />
+                    <Button Content="退出嵌入"
+                            Click="OnDetachClick"
+                            AutomationProperties.Name="退出嵌入" />
+                    <Button Content="切换普通 Widget"
+                            Click="OnWidgetClick"
+                            AutomationProperties.Name="切换普通 Widget" />
+                    <Button Content="恢复可见位置"
+                            Click="OnRestorePositionClick"
+                            AutomationProperties.Name="恢复可见位置" />
+                    <Button Content="关闭"
+                            Click="OnCloseClick"
+                            AutomationProperties.Name="关闭原型" />
+                </WrapPanel>
+                <TextBlock Margin="0,6,0,0"
+                           Foreground="{StaticResource MutedBrush}"
+                           FontSize="11"
+                           Text="验证提示：进入嵌入后，必须真实点击复选框；Explorer/显示器破坏性测试请按 README 手工执行。"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
