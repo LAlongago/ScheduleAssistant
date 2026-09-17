@@ -11,6 +11,10 @@ The specification reserves these topics for later decisions:
 - ADR-005: single-instance and notification-activation IPC; and
 - ADR-006: managed attachments and backup boundary.
 
+Accepted records:
+
+- [`002-sqlite-data-access-and-migrations.md`](002-sqlite-data-access-and-migrations.md) — DEV-020 SQLite access, migration integrity, storage encoding, and transaction boundary.
+
 DEV-001 established the template. The following proposed records were added by INTEGRATION-001 for the isolated platform experiments; they do not approve production adapters:
 
 - [`003-windows-notifications-and-publish-model.md`](003-windows-notifications-and-publish-model.md) — SPIKE-001 candidate notification/publish direction.

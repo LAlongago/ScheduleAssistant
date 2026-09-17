@@ -8,6 +8,12 @@
   <ItemGroup>
     <ProjectReference Include="..\ScheduleAssistant.Application\ScheduleAssistant.Application.csproj" />
     <ProjectReference Include="..\ScheduleAssistant.Domain\ScheduleAssistant.Domain.csproj" />
+    <PackageReference Include="Dapper" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Persistence\Migrations\*.sql" />
   </ItemGroup>
 </Project>
