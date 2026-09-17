@@ -209,3 +209,27 @@ dotnet run --project .\src\ScheduleAssistant.Presentation\ScheduleAssistant.Pres
 - Validated source/documentation commit SHA: `1f4766a7caec7b66e90ae65fac7d09190ba0d94c` (`DEV-001: validate local SDK and WPF build`).
 - SPIKE-001/SPIKE-002 and any later task must wait for WPF manual acceptance and subsequent
   push/CI review; this round does not authorize push, PR, merge, or reset.
+
+## Manual WPF acceptance feedback (2026-09-17)
+
+The pending state above is retained as the earlier observation-channel limitation. The user
+then performed the five checks on the real Windows desktop and reported all of them passed;
+the `dotnet run` command returned exit code `0`.
+
+| Check | Result | Evidence/method |
+|---|---|---|
+| Main window visibly displays | Passed | User observed the running `ScheduleAssistant` window |
+| No startup exception or error prompt | Passed | User observed the desktop during startup |
+| Window can close normally | Passed | User closed the window normally |
+| Application process exits after close | Passed | User reported exit code `0`; the run session ended |
+| No residual background application process | Passed | User checked after close; an independent `Get-Process -Name ScheduleAssistant` check returned no process |
+
+### Resolved conclusion
+
+- Environment preparation: **Passed**.
+- Release build: **Passed**.
+- Full test run: **Passed**, 4 test hosts and 7/7 tests passed.
+- WPF runtime: **Passed**, all five manual checks passed and `dotnet run` exited `0`.
+- Remote CI: **待推送后验证**; the branch remains unpushed and no GitHub CI result is claimed.
+- The local DEV-001 validation gate is complete. Branch push and CI verification may proceed
+  when separately authorized; SPIKE-001/SPIKE-002 still wait for CI green and merge to `main`.
