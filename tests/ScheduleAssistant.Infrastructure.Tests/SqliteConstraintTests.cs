@@ -104,4 +104,33 @@ public sealed class SqliteConstraintTests
         Assert.Null(await database.Tasks.GetByIdAsync(task.Id));
         Assert.Null(await database.Reminders.GetByIdAsync(firstReminder.Id));
     }
+
+    [Fact]
+    public async Task CrossRepositoryTransaction_WhenScopeExitsWithoutCommit_ShouldRollbackAndMarkResultTentative()
+    {
+        await using var database = await PersistenceTestDatabase.CreateAsync();
+        var category = PersistenceTestData.CreateCategory();
+        var categoryCommit = await database.Categories.AddAsync(category);
+        Assert.True(categoryCommit.IsCommitted);
+
+        var task = PersistenceTestData.CreateTask(category.Id);
+        var reminder = Reminder.Create(
+            Guid.NewGuid(),
+            task.Id,
+            -60,
+            PersistenceTestData.CreatedAtUtc,
+            "uncommitted-node");
+
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        {
+            await using var transaction = await database.TransactionFactory.BeginAsync();
+            var pending = await database.Tasks.AddAsync(task, transaction);
+            Assert.False(pending.IsCommitted);
+            await database.Reminders.AddAsync(reminder, transaction);
+            throw new InvalidOperationException("simulate application failure before commit");
+        });
+
+        Assert.Null(await database.Tasks.GetByIdAsync(task.Id));
+        Assert.Null(await database.Reminders.GetByIdAsync(reminder.Id));
+    }
 }

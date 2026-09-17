@@ -49,6 +49,37 @@ public sealed class SqliteMigrationTests
         Assert.NotEqual(string.Empty, checksum);
     }
 
+    [Fact]
+    public async Task InitializeAsync_WhenMigrationFails_ShouldRollbackBootstrapAndMigrationChanges()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "ScheduleAssistant-DEV020-" + Guid.NewGuid().ToString("N"));
+        await using var database = PersistenceTestDatabase.OpenExisting(root);
+
+        await using (var setupConnection = await database.ConnectionFactory.CreateOpenConnectionAsync())
+        {
+            await using var setupCommand = setupConnection.CreateCommand();
+            setupCommand.CommandText = "CREATE TABLE tasks (id TEXT PRIMARY KEY);";
+            await setupCommand.ExecuteNonQueryAsync();
+        }
+
+        await Assert.ThrowsAsync<SqliteException>(() => database.Initializer.InitializeAsync());
+
+        await using var verificationConnection = await database.ConnectionFactory.CreateOpenConnectionAsync();
+        var tasksTableCount = await ScalarAsync(
+            verificationConnection,
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'tasks';");
+        var migrationsTableCount = await ScalarAsync(
+            verificationConnection,
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations';");
+        var remindersTableCount = await ScalarAsync(
+            verificationConnection,
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'reminders';");
+
+        Assert.Equal(1L, Convert.ToInt64(tasksTableCount, CultureInfo.InvariantCulture));
+        Assert.Equal(0L, Convert.ToInt64(migrationsTableCount, CultureInfo.InvariantCulture));
+        Assert.Equal(0L, Convert.ToInt64(remindersTableCount, CultureInfo.InvariantCulture));
+    }
+
     private static async Task<object?> ScalarAsync(SqliteConnection connection, string sql)
     {
         await using var command = connection.CreateCommand();

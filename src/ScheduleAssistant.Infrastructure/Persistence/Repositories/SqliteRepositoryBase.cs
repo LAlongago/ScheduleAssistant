@@ -20,6 +20,14 @@ public abstract class SqliteRepositoryBase
         return InTransactionCoreAsync(operation, cancellationToken);
     }
 
+    protected Task<PersistenceCommitResult<TEntity>> InCommittedTransactionAsync<TEntity>(
+        Func<SqlitePersistenceTransaction, Task<PersistenceCommitResult<TEntity>>> operation,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(operation);
+        return InCommittedTransactionCoreAsync(operation, cancellationToken);
+    }
+
     protected Task InTransactionAsync(
         Func<SqlitePersistenceTransaction, Task> operation,
         CancellationToken cancellationToken)
@@ -74,6 +82,24 @@ public abstract class SqliteRepositoryBase
             var result = await operation(transaction).ConfigureAwait(false);
             await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
             return result;
+        }
+        catch
+        {
+            await TryRollbackAsync(transaction).ConfigureAwait(false);
+            throw;
+        }
+    }
+
+    private async Task<PersistenceCommitResult<TEntity>> InCommittedTransactionCoreAsync<TEntity>(
+        Func<SqlitePersistenceTransaction, Task<PersistenceCommitResult<TEntity>>> operation,
+        CancellationToken cancellationToken)
+    {
+        await using var transaction = await _transactionFactory.BeginSqliteAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var result = await operation(transaction).ConfigureAwait(false);
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+            return result with { IsCommitted = true };
         }
         catch
         {

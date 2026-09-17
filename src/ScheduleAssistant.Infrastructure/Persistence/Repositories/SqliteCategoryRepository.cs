@@ -56,7 +56,7 @@ public sealed class SqliteCategoryRepository : SqliteRepositoryBase, ICategoryRe
         Category category,
         CancellationToken cancellationToken = default)
     {
-        return InTransactionAsync(transaction => AddCoreAsync(category, transaction, cancellationToken), cancellationToken);
+        return InCommittedTransactionAsync(transaction => AddCoreAsync(category, transaction, cancellationToken), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -74,7 +74,7 @@ public sealed class SqliteCategoryRepository : SqliteRepositoryBase, ICategoryRe
         long expectedVersion,
         CancellationToken cancellationToken = default)
     {
-        return InTransactionAsync(
+        return InCommittedTransactionAsync(
             transaction => UpdateCoreAsync(category, expectedVersion, transaction, cancellationToken),
             cancellationToken);
     }

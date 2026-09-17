@@ -70,7 +70,7 @@ public sealed class SqliteRecurrenceSeriesRepository : SqliteRepositoryBase, IRe
         RecurrenceSeries series,
         CancellationToken cancellationToken = default)
     {
-        return InTransactionAsync(transaction => AddCoreAsync(series, transaction, cancellationToken), cancellationToken);
+        return InCommittedTransactionAsync(transaction => AddCoreAsync(series, transaction, cancellationToken), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -88,7 +88,7 @@ public sealed class SqliteRecurrenceSeriesRepository : SqliteRepositoryBase, IRe
         long expectedVersion,
         CancellationToken cancellationToken = default)
     {
-        return InTransactionAsync(
+        return InCommittedTransactionAsync(
             transaction => UpdateCoreAsync(series, expectedVersion, transaction, cancellationToken),
             cancellationToken);
     }

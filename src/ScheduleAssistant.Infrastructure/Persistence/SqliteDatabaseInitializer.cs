@@ -93,8 +93,20 @@ public sealed class SqliteDatabaseInitializer
         }
         catch
         {
-            await transaction.RollbackAsync(CancellationToken.None).ConfigureAwait(false);
+            await TryRollbackAsync(transaction).ConfigureAwait(false);
             throw;
+        }
+    }
+
+    private static async Task TryRollbackAsync(SqliteTransaction transaction)
+    {
+        try
+        {
+            await transaction.RollbackAsync(CancellationToken.None).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Preserve the migration error; disposing the transaction still closes the connection.
         }
     }
 

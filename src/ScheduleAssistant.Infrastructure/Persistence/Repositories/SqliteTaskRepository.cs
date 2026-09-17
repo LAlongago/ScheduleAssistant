@@ -139,7 +139,7 @@ public sealed class SqliteTaskRepository : SqliteRepositoryBase, ITaskRepository
         TaskItem item,
         CancellationToken cancellationToken = default)
     {
-        return InTransactionAsync(transaction => AddCoreAsync(item, transaction, cancellationToken), cancellationToken);
+        return InCommittedTransactionAsync(transaction => AddCoreAsync(item, transaction, cancellationToken), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -157,7 +157,7 @@ public sealed class SqliteTaskRepository : SqliteRepositoryBase, ITaskRepository
         long expectedVersion,
         CancellationToken cancellationToken = default)
     {
-        return InTransactionAsync(
+        return InCommittedTransactionAsync(
             transaction => UpdateCoreAsync(item, expectedVersion, transaction, cancellationToken),
             cancellationToken);
     }
