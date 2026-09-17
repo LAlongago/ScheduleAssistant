@@ -11,4 +11,9 @@ The specification reserves these topics for later decisions:
 - ADR-005: single-instance and notification-activation IPC; and
 - ADR-006: managed attachments and backup boundary.
 
-DEV-001 establishes the template and does not make the platform experiments required by SPIKE-001 or SPIKE-002.
+DEV-001 established the template. The following proposed records were added by INTEGRATION-001 for the isolated platform experiments; they do not approve production adapters:
+
+- [`003-windows-notifications-and-publish-model.md`](003-windows-notifications-and-publish-model.md) — SPIKE-001 candidate notification/publish direction.
+- [`004-desktop-host-and-fallback.md`](004-desktop-host-and-fallback.md) — SPIKE-002 WidgetFallback-first desktop-host direction.
+
+Both records retain their unverified system-behavior conditions and must be superseded or confirmed by the corresponding DEV-081/DEV-084 acceptance work.

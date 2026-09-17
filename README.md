@@ -15,6 +15,15 @@ This repository currently contains the DEV-001 engineering skeleton only:
 
 No business behavior, database migration, schema, table, repository, notification adapter, tray integration, or visual design system is implemented in DEV-001.
 
+## INTEGRATION-001 state
+
+The repository also contains two isolated, non-production prototypes under `spikes/`:
+
+- `spikes/SPIKE-001/` — Windows App SDK local-notification and activation experiment;
+- `spikes/SPIKE-002/` — WorkerW/Progman desktop-host and `WidgetFallback` experiment.
+
+Neither prototype is part of `ScheduleAssistant.sln`, the formal `src/`/`tests/` project graph, or the root CI build. Build them separately using the commands in their README files. Their historical build evidence and unverified Windows behavior are recorded in `docs/test-reports/` and must not be treated as formal adapter acceptance. The DEV-010 semantic draft is [`docs/specifications/DEV-010-domain-contracts.md`](docs/specifications/DEV-010-domain-contracts.md); it does not authorize implementation by itself.
+
 ## Prerequisites
 
 - .NET SDK 10.0.100 or a compatible later feature band selected by `global.json`;

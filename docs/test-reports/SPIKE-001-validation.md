@@ -31,14 +31,15 @@
 
 | 项目 | 结果 |
 |---|---|
-| OS | Windows 10 Pro 25H2，build `26200.9457`，runtime `10.0.26200.0` |
+| OS | Windows 11 25H2，build `26200.9457`，runtime `10.0.26200.0`；注册表 `ProductName=Windows 10 Pro` 是标签不一致，不改变按 build 26200 的系统分类 |
 | 桌面/架构 | 真实已登录 Windows 桌面；x64；标准用户，非管理员 |
 | PowerShell | `7.6.5 Core` |
 | .NET SDK | `10.0.100`，MSBuild `18.0.2` |
 | .NET Desktop Runtime | `Microsoft.WindowsDesktop.App 10.0.0` |
 | Windows App SDK 包 | `Microsoft.WindowsAppSDK 2.4.0`；实际解析的 Runtime 为 `2.4.0`，Foundation 为 `2.3.9` 等元包传递依赖 |
 | Windows App Runtime 状态 | 首次环境检查在首次 SCD 启动前未返回当前用户运行时包；随后检查可见 `Microsoft.WindowsAppRuntime.2 2.4.0.0` 及系统已有的其他版本。没有卸载或清理本机运行时 |
-| Windows 11 | 未验证；没有虚构跨系统结论 |
+| Windows 11 25H2 | 已验证；当前设备按 build `26200` 和 `25H2` 归类为 Windows 11 25H2 |
+| 独立 Windows 10 环境 | 未验证；没有虚构跨系统结论 |
 
 首次环境检查输出来自 `Scripts/Inspect-Environment.ps1`。由于实验期间没有干净 VM，后续运行时包状态只作为观察记录，不能证明状态变化一定由某一步单独造成。
 
@@ -82,7 +83,7 @@ pwsh -NoLogo -NoProfile -File .\spikes\SPIKE-001\Scripts\Publish.ps1 -Mode self-
 | 5 | 完全退出后点击已发通知，冷启动并接收参数 | 未验证 | 正常退出按钮和冷启动代码已实现；未完成发送、正常退出、通知中心保留通知、再点击的真实桌面闭环。 |
 | 6 | 通知关闭或注册失败不崩溃并显示诊断 | 未验证 | 注册/能力/发送异常均有捕获和 UI 诊断；尚未在设置中关闭通知并完成人工操作。无运行时的 FDD 失败属于发布宿主依赖，不能冒充“通知关闭”测试。 |
 | 7 | 含中文、空格的路径发布与启动 | 通过（发布/启动子项） | SCD 发布到 `C:\Users\ceo\AppData\Local\Temp\ScheduleAssistant SPIKE-001 中文 路径` 成功；启动后 3 秒仍 Responding，窗口句柄非零且标题正常。通知点击子项未验证。 |
-| 8 | 发布产物的目标机运行时依赖 | 部分通过 | SCD 在 Win10 实际启动；首次无当前用户 Windows App Runtime 状态下 FDD 启动失败并出现宿主错误窗口，随后运行时包可见时 FDD 可启动。未在干净 VM、Windows 11 或无预装运行时环境完成完整验证。 |
+| 8 | 发布产物的目标机运行时依赖 | 部分通过 | SCD 在 Windows 11 25H2 实际启动；首次无当前用户 Windows App Runtime 状态下 FDD 启动失败并出现宿主错误窗口，随后运行时包可见时 FDD 可启动。未在干净 VM、独立 Windows 10 或无预装运行时环境完成完整验证。 |
 
 ### 进程模型证据
 
@@ -92,9 +93,11 @@ FDD 的首次失败发生在运行时包尚未可见的实验状态；后续 SCD
 
 ## 结论与降级
 
-技术方向已明确：Windows App SDK `AppNotificationManager` 可以作为后续适配器的候选 API，未打包 WPF + 本地通知 + 单实例激活路由的最小结构可构建、可发布并在 Win10 启动。发布方向暂定优先调查未打包 SCD；但它不是已验收的零安装方案。
+技术方向已明确：Windows App SDK `AppNotificationManager` 可以作为后续适配器的候选 API，未打包 WPF + 本地通知 + 单实例激活路由的最小结构可构建、可发布并在 Windows 11 25H2 启动。发布方向暂定优先调查未打包 SCD；但它不是已验收的零安装方案。
 
-在 DEV-081 前必须补验真实通知中心交互、已发通知冷启动、通知关闭/注册失败、Windows 11 和用户提供的无运行时 VM。若 Singleton/Runtime 无法以可接受的步骤部署，降级为保留窗口/托盘入口和明确能力诊断；不要承诺进程退出或关机后主动提醒。
+在 DEV-081 前必须补验真实通知中心交互、已发通知冷启动、通知关闭/注册失败、独立 Windows 10 和用户提供的无运行时 VM。若 Singleton/Runtime 无法以可接受的步骤部署，降级为保留窗口/托盘入口和明确能力诊断；不要承诺进程退出或关机后主动提醒。
+
+本轮整合事实更正：原始记录把 `10.0.26200`/`ProductName=Windows 10 Pro` 直接写成 Windows 10；build `26200` + `25H2` 对应 Windows 11 25H2。原始字符串保留作审计证据，独立 Windows 10 环境仍未验证。
 
 ## 后续 `INotificationService` 建议（只读建议，不改公共契约）
 

@@ -75,7 +75,7 @@ pwsh -NoLogo -NoProfile -File .\spikes\SPIKE-001\Scripts\Publish.ps1 -Mode self-
 
 ## 未完成、已知问题和后续依赖
 
-- 当前只实测 Windows 10 Pro 25H2 build `26200.9457`；Windows 11 未验证。
+- 当前只实测 Windows 11 25H2 build `26200.9457`；独立 Windows 10 环境未验证。原交付中的 Windows 10 表述是对 `10.0`/注册表产品字符串的误分类；整合审查按 build `26200` + `25H2` 更正，并保留原始观测值。
 - 原生桌面自动化通道不可用，所以没有把按钮发送、通知中心点击、系统关闭通知和冷启动人工闭环伪报为通过。
 - 需要在 Windows 10/11 真实已登录桌面人工完成全部通知场景，尤其是：隐藏驻留点击、已有实例点击、完全退出后的旧通知点击、设置关闭、正常注销。
 - 需要用户提供的虚拟机或另一台测试机完成无预装 Windows App Runtime 的发布安装验证；不通过卸载本机运行时制造干净环境。
@@ -84,7 +84,7 @@ pwsh -NoLogo -NoProfile -File .\spikes\SPIKE-001\Scripts\Publish.ps1 -Mode self-
 
 ## 是否足以支持 DEV-081
 
-足以支持 DEV-081 继续做接口/适配器设计和受控原型工作：API 方向、异常诊断、单实例边界和 FDD/SCD 风险已经明确；不足以作为 DEV-081 完成验收或承诺 Windows 10/11 全面生产支持。正式实现前必须补齐真实通知点击/冷启动、Windows 11、无运行时 VM、通知禁用和 Singleton/Runtime 部署验证；若这些验证不稳定，应采用主界面/托盘定位等可接受降级。
+足以支持 DEV-081 继续做接口/适配器设计和受控原型工作：API 方向、异常诊断、单实例边界和 FDD/SCD 风险已经明确；不足以作为 DEV-081 完成验收或承诺 Windows 10/11 全面生产支持。正式实现前必须补齐真实通知点击/冷启动、独立 Windows 10、无运行时 VM、通知禁用和 Singleton/Runtime 部署验证；若这些验证不稳定，应采用主界面/托盘定位等可接受降级。
 
 ## Git 记录
 
