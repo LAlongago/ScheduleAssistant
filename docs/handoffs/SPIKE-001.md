@@ -88,4 +88,4 @@ pwsh -NoLogo -NoProfile -File .\spikes\SPIKE-001\Scripts\Publish.ps1 -Mode self-
 
 ## Git 记录
 
-最终实现提交 SHA：`1be3ae2`（SPIKE-001 原型与交付文档实现提交）。本次 handoff 的 SHA 记录更新随后提交；交付时不推送远程、不合并 `main`。
+最终实现提交 SHA：`1be3ae260310b9c1e840d0da56c4cadd40849f5a`（SPIKE-001 原型与交付文档实现提交）。本次 handoff 的 SHA 记录更新随后提交；交付时不推送远程、不合并 `main`。
