@@ -250,3 +250,33 @@ No authentication prompt, ref rejection, or CI run was reached. The branch remai
 unpushed; CI and merge have not started. The blocker is outbound HTTPS connectivity to GitHub,
 not a source/build/test failure. Once GitHub HTTPS access is restored, rerun the push, inspect
 the resulting workflow, and continue to merge only if every required check is green.
+
+## Remote merge and main CI completion (2026-09-17)
+
+The network recovered after the earlier delivery attempts. The branch was pushed to the
+confirmed repository and PR [#1](https://github.com/LAlongago/ScheduleAssistant/pull/1) was
+created. Its pull-request CI run `35176861980` completed with `success`; the single
+`build-and-test` job and all checkout, SDK setup, restore, Release build, test, artifact,
+and completion steps were successful.
+
+The PR was then merged with the verified head SHA
+`3e2a72e3c98cbfa2c944504b4292ba28f290b063`. GitHub returned merge commit
+`3cfbd051e026b667488ab898ada34a0a81569e2b`, and the remote `main` ref now points to that
+commit. The post-merge `push` workflow run `35177073922` also completed with `success`; its
+`build-and-test` job and every step were successful.
+
+The local `main` ref was fast-forwarded from `20ec16506b037468a71e61e871c03f05b5c33bac` to
+`3cfbd051e026b667488ab898ada34a0a81569e2b` after an ancestor check. The feature branch was
+left intact and no force operation or remote branch deletion was performed.
+
+### Final gate status
+
+- Environment preparation: **Passed**.
+- Release build: **Passed**.
+- Full test run: **Passed**, 4 hosts and 7/7 tests.
+- WPF runtime: **Passed**, all five manual checks and exit code 0.
+- Pull-request CI: **Passed**, run `35176861980`.
+- Post-merge main CI: **Passed**, run `35177073922`.
+- DEV-001 implementation merge: **Completed**, merge commit `3cfbd051e026b667488ab898ada34a0a81569e2b`.
+- DEV-001 is eligible to proceed from the merged `main` baseline. SPIKE-001/SPIKE-002 remain
+  separate follow-up tasks and were not implemented in DEV-001.
