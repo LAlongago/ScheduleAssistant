@@ -87,4 +87,5 @@ dotnet run --project .\spikes\SPIKE-002\ScheduleAssistant.SPIKE002.csproj -c Rel
 
 ## 最后提交 SHA
 
-待完成最终本地提交后补录；不推送、不合并 `main`。
+原型、ADR、报告和本交付记录的实现提交：`728988cbc7a35ddcae8976eaac6f551e5fd3f90a`。
+随后仅为补录此 SHA 产生的 handoff 文档提交会在最终交付消息中另行报告；不推送、不合并 `main`。
