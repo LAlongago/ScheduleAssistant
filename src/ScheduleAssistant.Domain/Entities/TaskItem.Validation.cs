@@ -65,6 +65,20 @@ public sealed partial class TaskItem
         }
     }
 
+    private static void ValidateCompletionTimeline(
+        DateTimeOffset? completedAtUtc,
+        DateTimeOffset createdAtUtc,
+        DateTimeOffset updatedAtUtc)
+    {
+        if (!completedAtUtc.HasValue)
+        {
+            return;
+        }
+
+        DomainValidation.EnsureAtOrAfter(completedAtUtc.Value, createdAtUtc, nameof(completedAtUtc));
+        DomainValidation.EnsureAtOrAfter(updatedAtUtc, completedAtUtc.Value, nameof(updatedAtUtc));
+    }
+
     private static long ValidateVersion(long version)
     {
         if (version < 1)

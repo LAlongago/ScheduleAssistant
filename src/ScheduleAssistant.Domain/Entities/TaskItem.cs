@@ -61,7 +61,11 @@ public sealed partial class TaskItem
         var normalizedCreatedAt = DomainValidation.NormalizeUtc(createdAtUtc, nameof(createdAtUtc));
         var normalizedUpdatedAt = DomainValidation.NormalizeUtc(updatedAtUtc, nameof(updatedAtUtc));
         DomainValidation.EnsureAtOrAfter(normalizedUpdatedAt, normalizedCreatedAt, nameof(updatedAtUtc));
-        ValidateWorkflowState(workflowStatus, completedAtUtc);
+        DateTimeOffset? normalizedCompletedAt = completedAtUtc.HasValue
+            ? DomainValidation.NormalizeUtc(completedAtUtc.Value, nameof(completedAtUtc))
+            : null;
+        ValidateWorkflowState(workflowStatus, normalizedCompletedAt);
+        ValidateCompletionTimeline(normalizedCompletedAt, normalizedCreatedAt, normalizedUpdatedAt);
 
         Title = values.Title;
         CategoryId = values.CategoryId;
@@ -79,9 +83,7 @@ public sealed partial class TaskItem
         IsOccurrenceOverride = isOccurrenceOverride;
         CreatedAtUtc = normalizedCreatedAt;
         UpdatedAtUtc = normalizedUpdatedAt;
-        CompletedAtUtc = completedAtUtc.HasValue
-            ? DomainValidation.NormalizeUtc(completedAtUtc.Value, nameof(completedAtUtc))
-            : null;
+        CompletedAtUtc = normalizedCompletedAt;
         Version = ValidateVersion(version);
     }
 
@@ -416,6 +418,8 @@ public sealed partial class TaskItem
 
         var normalizedCompletedAt = DomainValidation.NormalizeUtc(completedAtUtc, nameof(completedAtUtc));
         var normalizedUpdatedAt = ValidateUpdateTimestamp(updatedAtUtc);
+        DomainValidation.EnsureAtOrAfter(normalizedCompletedAt, UpdatedAtUtc, nameof(completedAtUtc));
+        DomainValidation.EnsureAtOrAfter(normalizedUpdatedAt, normalizedCompletedAt, nameof(updatedAtUtc));
         WorkflowStatus = WorkflowStatus.Completed;
         CompletedAtUtc = normalizedCompletedAt;
         UpdatedAtUtc = normalizedUpdatedAt;

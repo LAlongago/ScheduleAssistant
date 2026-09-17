@@ -221,6 +221,18 @@ public sealed class TaskItemTests
     }
 
     [Fact]
+    public void Rehydrate_WhenCompletionTimestampFallsOutsideTaskTimeline_ShouldRejectIt()
+    {
+        Assert.Throws<DomainValidationException>(() => DomainTestData.RehydrateTask(
+            workflowStatus: WorkflowStatus.Completed,
+            completedAtUtc: DomainTestData.AtUtc(2025, 12, 31)));
+        Assert.Throws<DomainValidationException>(() => DomainTestData.RehydrateTask(
+            workflowStatus: WorkflowStatus.Completed,
+            completedAtUtc: DomainTestData.AtUtc(2026, 1, 3),
+            updatedAtUtc: DomainTestData.AtUtc(2026, 1, 2)));
+    }
+
+    [Fact]
     public void Rehydrate_WhenVersionIsZero_ShouldRejectIt()
     {
         Assert.Throws<DomainValidationException>(() => DomainTestData.RehydrateTask(version: 0));
@@ -339,6 +351,28 @@ public sealed class TaskItemTests
 
         Assert.Equal(first, task.CompletedAtUtc);
         Assert.Equal(first, task.UpdatedAtUtc);
+    }
+
+    [Fact]
+    public void Complete_WhenCompletionAndUpdateTimestampsAreOutOfOrder_ShouldRejectWithoutMutation()
+    {
+        var task = DomainTestData.CreateTask();
+
+        Assert.Throws<DomainValidationException>(() => task.Complete(
+            DomainTestData.AtUtc(2026, 1, 2),
+            DomainTestData.AtUtc(2026, 1, 1, 23, 0)));
+
+        Assert.Equal(WorkflowStatus.Pending, task.WorkflowStatus);
+        Assert.Null(task.CompletedAtUtc);
+        Assert.Equal(DomainTestData.CreatedAtUtc, task.UpdatedAtUtc);
+
+        Assert.Throws<DomainValidationException>(() => task.Complete(
+            DomainTestData.AtUtc(2025, 12, 31),
+            DomainTestData.AtUtc(2026, 1, 2)));
+
+        Assert.Equal(WorkflowStatus.Pending, task.WorkflowStatus);
+        Assert.Null(task.CompletedAtUtc);
+        Assert.Equal(DomainTestData.CreatedAtUtc, task.UpdatedAtUtc);
     }
 
     [Fact]
