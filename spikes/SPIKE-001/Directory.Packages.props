@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Stable Windows App SDK metapackage selected for SPIKE-001 on 2026-09-17. -->
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
+  </ItemGroup>
+</Project>

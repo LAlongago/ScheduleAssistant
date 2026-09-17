@@ -1,0 +1,98 @@
+<Window x:Class="ScheduleAssistant.Spike001.Notifications.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ScheduleAssistant SPIKE-001 Notifications"
+        Width="900"
+        Height="720"
+        MinWidth="720"
+        MinHeight="560"
+        WindowStartupLocation="CenterScreen"
+        Closing="OnClosing">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   FontSize="24"
+                   FontWeight="SemiBold"
+                   Text="SPIKE-001：Windows 本地通知与点击激活" />
+        <TextBlock Grid.Row="1"
+                   Margin="0,8,0,16"
+                   TextWrapping="Wrap"
+                   Text="独立技术实验。通知载荷只包含固定模拟任务 ID，不连接 ScheduleAssistant 正式工程或数据库。" />
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Button Width="180"
+                    Margin="0,0,8,0"
+                    Click="SendNotificationClick"
+                    Content="发送测试通知" />
+            <Button Width="180"
+                    Margin="0,0,8,0"
+                    Click="RefreshCapabilityClick"
+                    Content="刷新通知能力" />
+            <Button Width="150"
+                    Margin="0,0,8,0"
+                    Click="HideWindowClick"
+                    Content="隐藏窗口" />
+            <Button Width="150"
+                    Click="ExitClick"
+                    Content="正常退出" />
+        </StackPanel>
+
+        <GroupBox Grid.Row="3" Margin="0,16,0,12" Header="通知状态">
+            <TextBlock x:Name="CapabilityText"
+                       Margin="12"
+                       Text="正在初始化..."
+                       TextWrapping="Wrap" />
+        </GroupBox>
+
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <GroupBox Grid.Row="0" Margin="0,0,0,12" Header="最近一次激活">
+                <TextBlock x:Name="ActivationText"
+                           Margin="12"
+                           Text="尚未收到通知或 IPC 激活。"
+                           TextWrapping="Wrap" />
+            </GroupBox>
+
+            <GroupBox Grid.Row="1" Margin="0,0,0,12" Header="运行时与发布诊断">
+                <TextBox x:Name="RuntimeTextBox"
+                         Height="150"
+                         Margin="12"
+                         IsReadOnly="True"
+                         FontFamily="Consolas"
+                         HorizontalScrollBarVisibility="Auto"
+                         TextWrapping="NoWrap"
+                         VerticalScrollBarVisibility="Auto" />
+            </GroupBox>
+
+            <GroupBox Grid.Row="2" Header="激活日志">
+                <TextBox x:Name="DiagnosticsTextBox"
+                         Margin="12"
+                         IsReadOnly="True"
+                         AcceptsReturn="True"
+                         FontFamily="Consolas"
+                         HorizontalScrollBarVisibility="Auto"
+                         TextWrapping="Wrap"
+                         VerticalScrollBarVisibility="Auto" />
+            </GroupBox>
+        </Grid>
+
+        <TextBlock Grid.Row="5"
+                   Margin="0,12,0,0"
+                   Foreground="Gray"
+                   Text="提示：关闭按钮默认隐藏窗口；请使用“正常退出”结束进程并验证已发通知的冷启动激活。"
+                   TextWrapping="Wrap" />
+    </Grid>
+</Window>
