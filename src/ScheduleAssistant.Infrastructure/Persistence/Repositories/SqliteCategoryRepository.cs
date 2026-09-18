@@ -42,6 +42,21 @@ public sealed class SqliteCategoryRepository : SqliteRepositoryBase, ICategoryRe
     }
 
     /// <inheritdoc />
+    public async Task<Category?> GetByIdAsync(
+        Guid id,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default)
+    {
+        var sqliteTransaction = RequireTransaction(transaction);
+        var row = await sqliteTransaction.Connection.QuerySingleOrDefaultAsync<CategoryRow>(Command(
+            $"SELECT {Columns} FROM categories WHERE id = @Id;",
+            new { Id = SqliteValueConverter.ToGuid(id) },
+            sqliteTransaction,
+            cancellationToken)).ConfigureAwait(false);
+        return row is null ? null : Map(row);
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<Category>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken).ConfigureAwait(false);

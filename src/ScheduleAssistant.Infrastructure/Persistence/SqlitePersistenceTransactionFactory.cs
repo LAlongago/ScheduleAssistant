@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using ScheduleAssistant.Application.Abstractions.Persistence;
+using ScheduleAssistant.Infrastructure.Persistence.Repositories;
 
 namespace ScheduleAssistant.Infrastructure.Persistence;
 
@@ -22,15 +23,25 @@ public sealed class SqlitePersistenceTransactionFactory : IPersistenceTransactio
 
     internal async Task<SqlitePersistenceTransaction> BeginSqliteAsync(CancellationToken cancellationToken)
     {
-        var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        SqliteConnection? connection = null;
         try
         {
+            connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken).ConfigureAwait(false);
             var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
             return new SqlitePersistenceTransaction(connection, transaction);
         }
-        catch
+        catch (Exception exception)
         {
-            await connection.DisposeAsync().ConfigureAwait(false);
+            if (connection is not null)
+            {
+                await connection.DisposeAsync().ConfigureAwait(false);
+            }
+
+            if (PersistenceExceptionMapper.IsProviderFailure(exception))
+            {
+                throw PersistenceExceptionMapper.MapProviderFailure("Transaction.Begin", exception);
+            }
+
             throw;
         }
     }

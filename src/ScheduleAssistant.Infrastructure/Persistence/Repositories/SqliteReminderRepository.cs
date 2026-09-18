@@ -52,6 +52,21 @@ public sealed class SqliteReminderRepository : SqliteRepositoryBase, IReminderRe
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<Reminder>> GetByTaskIdAsync(
+        Guid taskId,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default)
+    {
+        var sqliteTransaction = RequireTransaction(transaction);
+        var rows = await sqliteTransaction.Connection.QueryAsync<ReminderRow>(Command(
+            $"SELECT {Columns} FROM reminders WHERE task_id = @TaskId ORDER BY scheduled_at_utc, id;",
+            new { TaskId = SqliteValueConverter.ToGuid(taskId) },
+            sqliteTransaction,
+            cancellationToken)).ConfigureAwait(false);
+        return rows.Select(Map).ToArray();
+    }
+
+    /// <inheritdoc />
     public async Task<Reminder?> GetNextPendingAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken).ConfigureAwait(false);
@@ -96,6 +111,31 @@ public sealed class SqliteReminderRepository : SqliteRepositoryBase, IReminderRe
     public Task DeleteAsync(Guid id, IPersistenceTransaction transaction, CancellationToken cancellationToken = default)
     {
         return DeleteCoreAsync(id, RequireTransaction(transaction), cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<int> CancelPendingByTaskIdAsync(
+        Guid taskId,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default)
+    {
+        var sqliteTransaction = RequireTransaction(transaction);
+        return await sqliteTransaction.Connection.ExecuteAsync(Command(
+            """
+            UPDATE reminders
+            SET status = @Cancelled,
+                delivered_at_utc = NULL,
+                error_code = NULL
+            WHERE task_id = @TaskId AND status = @Pending;
+            """,
+            new
+            {
+                TaskId = SqliteValueConverter.ToGuid(taskId),
+                Pending = (int)ReminderStatus.Pending,
+                Cancelled = (int)ReminderStatus.Cancelled
+            },
+            sqliteTransaction,
+            cancellationToken)).ConfigureAwait(false);
     }
 
     private static async Task AddCoreAsync(
