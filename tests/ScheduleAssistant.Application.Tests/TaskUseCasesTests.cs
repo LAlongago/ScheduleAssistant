@@ -211,6 +211,70 @@ public sealed class TaskUseCasesTests
     }
 
     [Fact]
+    public async Task CancelCompletion_AfterDeadlineEdit_ShouldRestoreOnlyTheCurrentPlan()
+    {
+        await using var context = new TaskUseCaseTestContext();
+        var category = context.SeedCategory();
+        var created = await context.CreateTaskAsync(category.Id);
+
+        var edited = await context.UseCases.UpdateAsync(new UpdateTaskCommand(
+            created.Value!.Id,
+            created.Value.Version,
+            new TaskDraft(
+                "Test task",
+                category.Id,
+                Deadline: new DeadlineInput(
+                    new DateOnly(2026, 1, 5),
+                    new TimeOnly(12, 0),
+                    "China Standard Time"))));
+        var completed = await context.UseCases.CompleteAsync(
+            new ChangeTaskStateCommand(edited.Value!.Id, edited.Value.Version));
+
+        var restored = await context.UseCases.CancelCompletionAsync(
+            new ChangeTaskStateCommand(completed.Value!.Id, completed.Value.Version));
+
+        Assert.True(restored.IsSuccess);
+        var pending = Assert.Single(
+            context.Store.RemindersFor(created.Value.Id),
+            reminder => reminder.Status == ReminderStatus.Pending);
+        Assert.Equal(
+            new DateTimeOffset(2026, 1, 4, 4, 0, 0, TimeSpan.Zero),
+            pending.ScheduledAtUtc);
+    }
+
+    [Fact]
+    public async Task CancelCompletion_AfterReminderWasDisabled_ShouldNotRestoreAPlan()
+    {
+        await using var context = new TaskUseCaseTestContext();
+        var category = context.SeedCategory();
+        var created = await context.CreateTaskAsync(category.Id);
+        var deadline = created.Value!.Deadline!;
+
+        var disabled = await context.UseCases.UpdateAsync(new UpdateTaskCommand(
+            created.Value.Id,
+            created.Value.Version,
+            new TaskDraft(
+                "Test task",
+                category.Id,
+                Deadline: new DeadlineInput(
+                    deadline.LocalDate,
+                    deadline.LocalTime,
+                    deadline.TimeZoneId,
+                    deadline.Utc),
+                ReminderPlan: new ReminderPlanInput(Enabled: false))));
+        var completed = await context.UseCases.CompleteAsync(
+            new ChangeTaskStateCommand(disabled.Value!.Id, disabled.Value.Version));
+
+        var restored = await context.UseCases.CancelCompletionAsync(
+            new ChangeTaskStateCommand(completed.Value!.Id, completed.Value.Version));
+
+        Assert.True(restored.IsSuccess);
+        Assert.DoesNotContain(
+            context.Store.RemindersFor(created.Value.Id),
+            reminder => reminder.Status == ReminderStatus.Pending);
+    }
+
+    [Fact]
     public async Task StateTransitions_WhenRepeated_ShouldPreserveDomainIdempotencyAndVersion()
     {
         await using var context = new TaskUseCaseTestContext();

@@ -48,6 +48,27 @@ public sealed partial class TaskUseCases
             .CancelPendingByTaskIdAsync(task.Id, transaction, cancellationToken)
             .ConfigureAwait(false);
 
+        // An explicit disable replaces the active plan. Remove pending/cancelled
+        // nodes so CancelCompletion cannot mistake the disabled plan for one
+        // cancelled by completion. Delivered/expired/failed history is retained.
+        if (requestedPlan is { Enabled: false } && task.Deadline is not null)
+        {
+            await RemovePendingAndCancelledRemindersAsync(
+                reminders,
+                transaction,
+                cancellationToken).ConfigureAwait(false);
+        }
+        else if (requestedPlan is { Enabled: true } && task.WorkflowStatus != WorkflowStatus.Completed)
+        {
+            // A newly selected offset supersedes the old pending plan while the
+            // task is active. Keep delivery history, but do not leave stale plan
+            // nodes that could be restored after a later completion toggle.
+            await RemovePendingAndCancelledRemindersAsync(
+                reminders,
+                transaction,
+                cancellationToken).ConfigureAwait(false);
+        }
+
         var shouldCreate = task.Deadline is not null && task.WorkflowStatus != WorkflowStatus.Completed;
         var deadlineWasAdded = previousDeadline is null && task.Deadline is not null;
         var enabled = requestedPlan?.Enabled
@@ -62,6 +83,20 @@ public sealed partial class TaskUseCases
 
         var changed = deadlineChanged || requestedPlan is not null || cancelledCount > 0 || created;
         return new ReminderChange(changed, created, created);
+    }
+
+    private async Task RemovePendingAndCancelledRemindersAsync(
+        IReadOnlyList<Reminder> reminders,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken)
+    {
+        foreach (var reminder in reminders.Where(reminder =>
+                     reminder.Status is ReminderStatus.Pending or ReminderStatus.Cancelled))
+        {
+            await _reminderRepository
+                .DeleteAsync(reminder.Id, transaction, cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 
     private Reminder CreateReminder(TaskItem task, int relativeOffsetMinutes)

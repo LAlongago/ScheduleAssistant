@@ -420,11 +420,13 @@ public sealed partial class TaskUseCases : ITaskUseCases
             .Where(reminder => reminder.Status == ReminderStatus.Pending)
             .Select(reminder => reminder.RelativeOffsetMinutes)
             .ToHashSet();
+        var currentDeadlineUtc = saved.Entity.DeadlineUtc;
         var restoredCount = 0;
-        if (saved.Entity.Deadline is not null)
+        if (currentDeadlineUtc.HasValue)
         {
             foreach (var offset in reminders
                 .Where(reminder => reminder.Status == ReminderStatus.Cancelled)
+                .Where(reminder => reminder.ScheduledAtUtc == currentDeadlineUtc.Value.AddMinutes(reminder.RelativeOffsetMinutes))
                 .Select(reminder => reminder.RelativeOffsetMinutes)
                 .Distinct()
                 .Where(offset => !pendingOffsets.Contains(offset)))

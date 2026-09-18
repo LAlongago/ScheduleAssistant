@@ -521,7 +521,19 @@ internal sealed class InMemoryReminderRepository : IReminderRepository
 
     public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
-    public Task DeleteAsync(Guid id, IPersistenceTransaction transaction, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    public Task DeleteAsync(Guid id, IPersistenceTransaction transaction, CancellationToken cancellationToken = default)
+    {
+        var working = ((InMemoryTransaction)transaction).Working;
+        foreach (var reminders in working.Reminders.Values)
+        {
+            if (reminders.RemoveAll(reminder => reminder.Id == id) != 0)
+            {
+                break;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
 
     public Task<int> CancelPendingByTaskIdAsync(Guid taskId, IPersistenceTransaction transaction, CancellationToken cancellationToken = default)
     {

@@ -11,6 +11,28 @@ namespace ScheduleAssistant.Infrastructure.Tests;
 public sealed class PersistenceExceptionMappingTests
 {
     [Fact]
+    public async Task TransactionFactory_WhenDatabasePathCannotBeOpened_ShouldExposeProviderNeutralFailure()
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), "ScheduleAssistant-DEV030-map-file-" + Guid.NewGuid().ToString("N"));
+        await File.WriteAllTextAsync(filePath, "not a directory");
+        try
+        {
+            var paths = new AppPaths(filePath);
+            var factory = new SqlitePersistenceTransactionFactory(new SqliteConnectionFactory(paths));
+
+            var exception = await Assert.ThrowsAsync<PersistenceFailureException>(() => factory.BeginAsync());
+
+            Assert.Equal(PersistenceFailureKind.Unavailable, exception.Kind);
+            Assert.Equal("Transaction.Begin", exception.Operation);
+            Assert.DoesNotContain("SQLite", exception.Message, StringComparison.OrdinalIgnoreCase);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [Fact]
     public async Task ComposedRepositories_WhenSqliteRejectsConstraint_ShouldExposeProviderNeutralFailure()
     {
         var root = Path.Combine(Path.GetTempPath(), "ScheduleAssistant-DEV030-map-" + Guid.NewGuid().ToString("N"));
