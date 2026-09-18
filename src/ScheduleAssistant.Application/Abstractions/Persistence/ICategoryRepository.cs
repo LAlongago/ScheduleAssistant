@@ -8,6 +8,12 @@ public interface ICategoryRepository
     /// <summary>Finds a category by identity.</summary>
     Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    /// <summary>Reads a category through a caller-owned transaction.</summary>
+    Task<Category?> GetByIdAsync(
+        Guid id,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Gets categories ordered by configured sort order and name.</summary>
     Task<IReadOnlyList<Category>> GetAllAsync(CancellationToken cancellationToken = default);
 

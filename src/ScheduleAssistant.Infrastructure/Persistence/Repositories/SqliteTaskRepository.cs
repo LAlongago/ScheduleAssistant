@@ -55,6 +55,21 @@ public sealed class SqliteTaskRepository : SqliteRepositoryBase, ITaskRepository
     }
 
     /// <inheritdoc />
+    public async Task<TaskItem?> GetByIdAsync(
+        Guid id,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default)
+    {
+        var sqliteTransaction = RequireTransaction(transaction);
+        var row = await sqliteTransaction.Connection.QuerySingleOrDefaultAsync<TaskRow>(Command(
+            $"SELECT {Columns} FROM tasks WHERE id = @Id;",
+            new { Id = SqliteValueConverter.ToGuid(id) },
+            sqliteTransaction,
+            cancellationToken)).ConfigureAwait(false);
+        return row is null ? null : Map(row);
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<TaskItem>> GetPlannedByDateAsync(
         DateOnly plannedOn,
         CancellationToken cancellationToken = default)
@@ -184,6 +199,24 @@ public sealed class SqliteTaskRepository : SqliteRepositoryBase, ITaskRepository
         return DeleteCoreAsync(id, RequireTransaction(transaction), cancellationToken);
     }
 
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(Guid id, long expectedVersion, CancellationToken cancellationToken = default)
+    {
+        return InTransactionAsync(
+            transaction => DeleteConditionalCoreAsync(id, expectedVersion, transaction, cancellationToken),
+            cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<bool> DeleteAsync(
+        Guid id,
+        long expectedVersion,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default)
+    {
+        return DeleteConditionalCoreAsync(id, expectedVersion, RequireTransaction(transaction), cancellationToken);
+    }
+
     private static async Task<PersistenceCommitResult<TaskItem>> AddCoreAsync(
         TaskItem item,
         SqlitePersistenceTransaction transaction,
@@ -273,6 +306,35 @@ public sealed class SqliteTaskRepository : SqliteRepositoryBase, ITaskRepository
             new { Id = SqliteValueConverter.ToGuid(id) },
             transaction,
             cancellationToken)).ConfigureAwait(false);
+    }
+
+    private static async Task<bool> DeleteConditionalCoreAsync(
+        Guid id,
+        long expectedVersion,
+        SqlitePersistenceTransaction transaction,
+        CancellationToken cancellationToken)
+    {
+        var affected = await transaction.Connection.ExecuteAsync(Command(
+            "DELETE FROM tasks WHERE id = @Id AND version = @ExpectedVersion;",
+            new
+            {
+                Id = SqliteValueConverter.ToGuid(id),
+                ExpectedVersion = expectedVersion
+            },
+            transaction,
+            cancellationToken)).ConfigureAwait(false);
+        if (affected == 1)
+        {
+            return true;
+        }
+
+        var actualVersion = await GetVersionAsync(id, transaction, cancellationToken).ConfigureAwait(false);
+        if (!actualVersion.HasValue)
+        {
+            throw new PersistenceNotFoundException(nameof(TaskItem), id);
+        }
+
+        throw Conflict(nameof(TaskItem), id, expectedVersion, actualVersion);
     }
 
     private static async Task<TaskRow?> GetRowAsync(

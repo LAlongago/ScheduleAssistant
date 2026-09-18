@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using ScheduleAssistant.Application.Abstractions.Persistence;
+using ScheduleAssistant.Infrastructure.Persistence.Repositories;
 
 namespace ScheduleAssistant.Infrastructure.Persistence;
 
@@ -22,7 +23,15 @@ public sealed class SqlitePersistenceTransaction : IPersistenceTransaction
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
         EnsureActive();
-        await Transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            await Transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (PersistenceExceptionMapper.IsProviderFailure(exception))
+        {
+            throw PersistenceExceptionMapper.MapProviderFailure("Transaction.Commit", exception);
+        }
+
         _completed = true;
     }
 

@@ -8,6 +8,12 @@ public interface ITaskRepository
     /// <summary>Finds a task by identity.</summary>
     Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    /// <summary>Reads a task through a caller-owned transaction.</summary>
+    Task<TaskItem?> GetByIdAsync(
+        Guid id,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Gets tasks planned on the supplied local date.</summary>
     Task<IReadOnlyList<TaskItem>> GetPlannedByDateAsync(DateOnly plannedOn, CancellationToken cancellationToken = default);
 
@@ -50,4 +56,19 @@ public interface ITaskRepository
 
     /// <summary>Deletes a task in an existing transaction.</summary>
     Task DeleteAsync(Guid id, IPersistenceTransaction transaction, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a task only when its stored version matches the expected version.
+    /// </summary>
+    Task<bool> DeleteAsync(
+        Guid id,
+        long expectedVersion,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Conditionally deletes a task in a caller-owned transaction.</summary>
+    Task<bool> DeleteAsync(
+        Guid id,
+        long expectedVersion,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
 }

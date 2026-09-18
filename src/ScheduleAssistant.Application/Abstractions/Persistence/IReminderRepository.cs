@@ -11,6 +11,12 @@ public interface IReminderRepository
     /// <summary>Gets all reminders belonging to a task.</summary>
     Task<IReadOnlyList<Reminder>> GetByTaskIdAsync(Guid taskId, CancellationToken cancellationToken = default);
 
+    /// <summary>Reads all reminders belonging to a task through a caller-owned transaction.</summary>
+    Task<IReadOnlyList<Reminder>> GetByTaskIdAsync(
+        Guid taskId,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Gets the earliest pending reminder, if one exists.</summary>
     Task<Reminder?> GetNextPendingAsync(CancellationToken cancellationToken = default);
 
@@ -31,4 +37,13 @@ public interface IReminderRepository
 
     /// <summary>Deletes a reminder in an existing transaction.</summary>
     Task DeleteAsync(Guid id, IPersistenceTransaction transaction, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Cancels only pending reminders for a task in a caller-owned transaction.
+    /// Delivered, expired, failed, and already-cancelled rows are not overwritten.
+    /// </summary>
+    Task<int> CancelPendingByTaskIdAsync(
+        Guid taskId,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
 }
