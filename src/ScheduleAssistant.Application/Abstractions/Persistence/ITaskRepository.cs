@@ -23,10 +23,41 @@ public interface ITaskRepository
     /// </summary>
     Task<IReadOnlyList<TaskItem>> GetByRangeAsync(DateOnly rangeStart, DateOnly rangeEnd, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Gets uncompleted tasks that need attention today: historical plans, today's plans,
+    /// today's local-date deadlines, or deadlines already overdue by UTC.
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> GetTodayPendingAsync(
+        DateOnly todayLocal,
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Gets incomplete tasks whose UTC deadline is in the requested range.</summary>
     Task<IReadOnlyList<TaskItem>> GetUpcomingDeadlinesAsync(
         DateTimeOffset nowUtc,
         DateTimeOffset? untilUtc,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets incomplete tasks with deadlines in the future range and, when requested, all
+    /// deadlines already overdue. A deadline exactly at <paramref name="nowUtc"/> is upcoming.
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> GetDeadlinesAsync(
+        DateTimeOffset nowUtc,
+        DateTimeOffset? untilUtc,
+        bool includeOverdue,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Searches tasks with provider-neutral filters and database-side paging.</summary>
+    Task<IReadOnlyList<TaskItem>> SearchAsync(
+        TaskSearchFilter filter,
+        long offset,
+        int limit,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Counts tasks using exactly the same filters as <see cref="SearchAsync"/>.</summary>
+    Task<long> CountSearchAsync(
+        TaskSearchFilter filter,
         CancellationToken cancellationToken = default);
 
     /// <summary>Inserts a task using its current domain version.</summary>

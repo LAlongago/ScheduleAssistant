@@ -122,8 +122,20 @@ internal sealed class PersistenceMappingTaskRepository : ITaskRepository
     public Task<IReadOnlyList<TaskItem>> GetByRangeAsync(DateOnly rangeStart, DateOnly rangeEnd, CancellationToken cancellationToken = default) =>
         PersistenceExceptionMapper.ExecuteAsync("Task.GetByRange", () => _inner.GetByRangeAsync(rangeStart, rangeEnd, cancellationToken));
 
+    public Task<IReadOnlyList<TaskItem>> GetTodayPendingAsync(DateOnly todayLocal, DateTimeOffset nowUtc, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Task.GetTodayPending", () => _inner.GetTodayPendingAsync(todayLocal, nowUtc, cancellationToken));
+
     public Task<IReadOnlyList<TaskItem>> GetUpcomingDeadlinesAsync(DateTimeOffset nowUtc, DateTimeOffset? untilUtc, CancellationToken cancellationToken = default) =>
         PersistenceExceptionMapper.ExecuteAsync("Task.GetUpcomingDeadlines", () => _inner.GetUpcomingDeadlinesAsync(nowUtc, untilUtc, cancellationToken));
+
+    public Task<IReadOnlyList<TaskItem>> GetDeadlinesAsync(DateTimeOffset nowUtc, DateTimeOffset? untilUtc, bool includeOverdue, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Task.GetDeadlines", () => _inner.GetDeadlinesAsync(nowUtc, untilUtc, includeOverdue, cancellationToken));
+
+    public Task<IReadOnlyList<TaskItem>> SearchAsync(TaskSearchFilter filter, long offset, int limit, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Task.Search", () => _inner.SearchAsync(filter, offset, limit, cancellationToken));
+
+    public Task<long> CountSearchAsync(TaskSearchFilter filter, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Task.CountSearch", () => _inner.CountSearchAsync(filter, cancellationToken));
 
     public Task<PersistenceCommitResult<TaskItem>> AddAsync(TaskItem item, CancellationToken cancellationToken = default) =>
         PersistenceExceptionMapper.ExecuteAsync("Task.Add", () => _inner.AddAsync(item, cancellationToken));
