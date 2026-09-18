@@ -1,9 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ScheduleAssistant.Application.Abstractions.Configuration;
 using ScheduleAssistant.Application.Abstractions.Persistence;
+using ScheduleAssistant.Application.Abstractions.Settings;
 using ScheduleAssistant.Application;
 using ScheduleAssistant.Domain;
+using ScheduleAssistant.Infrastructure.Logging;
 using ScheduleAssistant.Infrastructure.Persistence;
 using ScheduleAssistant.Infrastructure.Persistence.Repositories;
+using ScheduleAssistant.Infrastructure.Settings;
 
 namespace ScheduleAssistant.Infrastructure.Composition;
 
@@ -25,7 +30,13 @@ public static class InfrastructureServiceCollectionExtensions
         _ = typeof(ApplicationAssemblyMarker);
         _ = typeof(DomainAssemblyMarker);
 
-        services.AddSingleton(_ => rootDirectory is null ? AppPaths.CreateDefault() : new AppPaths(rootDirectory));
+        services.AddSingleton<AppPaths>(_ => rootDirectory is null ? AppPaths.CreateDefault() : new AppPaths(rootDirectory));
+        services.AddSingleton<IAppPaths>(serviceProvider => serviceProvider.GetRequiredService<AppPaths>());
+        services.AddSingleton<IUserSettingsStore, JsonUserSettingsStore>();
+        services.AddSingleton<FileLoggerOptions>();
+        services.AddSingleton<FileLoggerProvider>();
+        services.AddSingleton<ILoggerProvider>(serviceProvider =>
+            serviceProvider.GetRequiredService<FileLoggerProvider>());
         services.AddSingleton<SqliteConnectionFactory>();
         services.AddSingleton<SqlitePersistenceTransactionFactory>();
         services.AddSingleton<IPersistenceTransactionFactory>(serviceProvider =>
