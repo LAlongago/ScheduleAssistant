@@ -187,18 +187,21 @@ public sealed class FileLoggerProviderTests
             });
         var logger = provider.CreateLogger("ScheduleAssistant.Infrastructure.Tests.RollingComponent");
 
-        for (var index = 0; index < 30; index++)
+        if (logger.IsEnabled(LogLevel.Information))
         {
-            logger.Log(
-                LogLevel.Information,
-                new EventId(500 + index),
-                new[]
-                {
-                    new KeyValuePair<string, object?>("Operation", "Write"),
-                    new KeyValuePair<string, object?>("Count", index)
-                },
-                exception: null,
-                static (_, _) => string.Empty);
+            for (var index = 0; index < 30; index++)
+            {
+                logger.Log(
+                    LogLevel.Information,
+                    new EventId(500 + index),
+                    new[]
+                    {
+                        new KeyValuePair<string, object?>("Operation", "Write"),
+                        new KeyValuePair<string, object?>("Count", index)
+                    },
+                    exception: null,
+                    static (_, _) => string.Empty);
+            }
         }
 
         Directory.CreateDirectory(paths.LogsDirectory);
