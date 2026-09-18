@@ -1,9 +1,11 @@
+using ScheduleAssistant.Application.Abstractions.Configuration;
+
 namespace ScheduleAssistant.Infrastructure.Persistence;
 
 /// <summary>
 /// Resolves all application data locations from one injectable root directory.
 /// </summary>
-public sealed class AppPaths
+public sealed class AppPaths : IAppPaths
 {
     /// <summary>Initializes paths under the supplied application root.</summary>
     public AppPaths(string rootDirectory)
@@ -44,6 +46,9 @@ public sealed class AppPaths
 
     /// <summary>Gets the settings directory.</summary>
     public string SettingsDirectory => Path.Combine(RootDirectory, "settings");
+
+    /// <summary>Gets the user settings JSON file path.</summary>
+    public string UserSettingsFilePath => Path.Combine(SettingsDirectory, "user-settings.json");
 
     /// <summary>Creates the application directories needed by persistence and later adapters.</summary>
     public void EnsureDirectories()

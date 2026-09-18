@@ -10,6 +10,7 @@
     <ProjectReference Include="..\ScheduleAssistant.Domain\ScheduleAssistant.Domain.csproj" />
     <PackageReference Include="Dapper" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
   </ItemGroup>
 
