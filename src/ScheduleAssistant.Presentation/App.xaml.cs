@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ScheduleAssistant.Application;
 using ScheduleAssistant.Infrastructure.Composition;
+using ScheduleAssistant.Presentation.Composition;
 
 namespace ScheduleAssistant.Presentation;
 
@@ -25,7 +26,7 @@ public partial class App : System.Windows.Application
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             MainWindow = mainWindow;
-            mainWindow.Show();
+            _host.Services.GetRequiredService<IWindowService>().ShowMainWindow(mainWindow);
         }
         catch (Exception exception)
         {
@@ -67,7 +68,7 @@ public partial class App : System.Windows.Application
         }
 
         builder.Services.AddInfrastructure();
-        builder.Services.AddSingleton<MainWindow>();
+        builder.Services.AddPresentation();
         return builder.Build();
     }
 }

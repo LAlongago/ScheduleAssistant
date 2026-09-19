@@ -1,0 +1,138 @@
+<UserControl x:Class="ScheduleAssistant.Presentation.Controls.TaskCard"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ScheduleAssistant.Presentation.ViewModels">
+    <Border Style="{StaticResource CardBorder}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border x:Name="TypeAccent"
+                    Grid.Column="0"
+                    CornerRadius="{DynamicResource Radius.AccentBar}"
+                    Style="{DynamicResource TypeAccentStyle}" />
+
+            <Grid Grid.Column="1" Margin="{DynamicResource Spacing.Card}">
+                <Grid x:Name="StandardLayout">
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Mode}"
+                                             Value="{x:Static vm:TaskCardMode.Compact}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Grid.Row="0"
+                              Grid.Column="0"
+                              Margin="0,0,12,0"
+                              IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                              IsEnabled="{Binding IsCompletionEnabled}"
+                              Command="{Binding CompletionCommand}"
+                              Style="{StaticResource CompletionCheckBox}" />
+                    <StackPanel Grid.Row="0" Grid.Column="1">
+                        <TextBlock Style="{StaticResource Text.CardTitle}" Text="{Binding Title}" />
+                        <TextBlock Margin="{DynamicResource Spacing.GapXSmall}"
+                                   Style="{StaticResource Text.Caption}"
+                                   Text="{Binding CategoryText}" />
+                    </StackPanel>
+                    <Border Grid.Row="0"
+                            Grid.Column="2"
+                            Style="{StaticResource PillBorder}"
+                            VerticalAlignment="Top">
+                        <TextBlock Style="{StaticResource Text.Caption}" Text="{Binding PriorityText}" />
+                    </Border>
+
+                    <WrapPanel Grid.Row="1"
+                               Grid.Column="1"
+                               Grid.ColumnSpan="2"
+                               Margin="0,14,0,0">
+                        <TextBlock Margin="0,0,18,0"
+                                   Style="{StaticResource Text.Body}"
+                                   Text="{Binding PlannedTimeText}" />
+                        <TextBlock Style="{StaticResource Text.Body}"
+                                   Text="{Binding DeadlineText}" />
+                    </WrapPanel>
+                    <WrapPanel Grid.Row="2"
+                               Grid.Column="1"
+                               Grid.ColumnSpan="2"
+                               Margin="0,8,0,0">
+                        <TextBlock Margin="0,0,18,0" Style="{StaticResource Text.Caption}">
+                            <Run Text="⌖ " />
+                            <Run Text="{Binding LocationText, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Text.Caption}"
+                                   Text="{Binding StatusText}" />
+                    </WrapPanel>
+                </Grid>
+
+                <Grid x:Name="CompactLayout">
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Mode}"
+                                             Value="{x:Static vm:TaskCardMode.Compact}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Margin="0,0,8,0"
+                               FontSize="{DynamicResource FontSize.Caption}"
+                               Foreground="{DynamicResource Brush.Accent}"
+                               Text="●"
+                               ToolTip="计划事项"
+                               AutomationProperties.Name="计划事项" />
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Style="{StaticResource Text.CardTitle}" Text="{Binding Title}" />
+                        <TextBlock Margin="{DynamicResource Spacing.GapXSmall}"
+                                   Style="{StaticResource Text.Caption}"
+                                   Text="{Binding PlannedTimeText}" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
+    <UserControl.Resources>
+        <Style x:Key="TypeAccentStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="{DynamicResource Brush.CategoryOther}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Research}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryResearch}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Course}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryCourse}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Meeting}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryMeeting}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Administration}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryAdmin}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Life}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryLife}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+</UserControl>

@@ -1,0 +1,12 @@
+<UserControl x:Class="ScheduleAssistant.Presentation.Views.AllTasksView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:ScheduleAssistant.Presentation.Controls">
+    <ScrollViewer Padding="{DynamicResource Spacing.Page}"
+                  HorizontalScrollBarVisibility="Disabled"
+                  VerticalScrollBarVisibility="Auto">
+        <controls:PageStatePresenter State="{Binding ContentState}"
+                                     StatusTitle="{Binding StatusTitle}"
+                                     StatusMessage="{Binding StatusMessage}" />
+    </ScrollViewer>
+</UserControl>

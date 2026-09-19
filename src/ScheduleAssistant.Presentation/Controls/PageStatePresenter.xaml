@@ -1,0 +1,94 @@
+<UserControl x:Class="ScheduleAssistant.Presentation.Controls.PageStatePresenter"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:ScheduleAssistant.Presentation.Controls">
+    <Grid>
+        <ContentPresenter x:Name="NormalPresenter"
+                          Content="{Binding NormalContent, ElementName=Root}">
+            <ContentPresenter.Style>
+                <Style TargetType="{x:Type ContentPresenter}">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                     Value="{x:Static controls:PageContentState.Loading}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                     Value="{x:Static controls:PageContentState.Empty}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                     Value="{x:Static controls:PageContentState.Error}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ContentPresenter.Style>
+        </ContentPresenter>
+
+        <Border x:Name="StatusPanel"
+                Background="{DynamicResource Brush.SurfaceSubtle}"
+                BorderBrush="{DynamicResource Brush.Border}"
+                BorderThickness="{DynamicResource BorderThickness.Subtle}"
+                CornerRadius="{DynamicResource Radius.Card}"
+                Padding="{DynamicResource Spacing.Window}"
+                HorizontalAlignment="Stretch">
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                     Value="{x:Static controls:PageContentState.Loading}">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                     Value="{x:Static controls:PageContentState.Empty}">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                     Value="{x:Static controls:PageContentState.Error}">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel HorizontalAlignment="Center" MaxWidth="520">
+                <TextBlock x:Name="StatusIcon"
+                           HorizontalAlignment="Center"
+                           FontSize="{DynamicResource FontSize.Display}"
+                           TextAlignment="Center">
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Text" Value="…" />
+                            <Setter Property="Foreground" Value="{DynamicResource Brush.Accent}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                             Value="{x:Static controls:PageContentState.Empty}">
+                                    <Setter Property="Text" Value="○" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Brush.TextMuted}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding State, ElementName=Root}"
+                                             Value="{x:Static controls:PageContentState.Error}">
+                                    <Setter Property="Text" Value="!" />
+                                    <Setter Property="Foreground" Value="{DynamicResource Brush.Danger}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock HorizontalAlignment="Center"
+                           Margin="{DynamicResource Spacing.GapSmall}"
+                           AutomationProperties.LiveSetting="Polite"
+                           Style="{StaticResource Text.SectionTitle}"
+                           Text="{Binding StatusTitle, ElementName=Root}"
+                           TextAlignment="Center" />
+                <TextBlock HorizontalAlignment="Center"
+                           Margin="{DynamicResource Spacing.GapXSmall}"
+                           Style="{StaticResource Text.Body}"
+                           Text="{Binding StatusMessage, ElementName=Root}"
+                           TextAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
