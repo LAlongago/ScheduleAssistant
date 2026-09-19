@@ -3,7 +3,7 @@ using ScheduleAssistant.Application.Common;
 namespace ScheduleAssistant.Application.Tasks;
 
 /// <summary>Application boundary for ordinary task commands and basic queries.</summary>
-public interface ITaskUseCases
+public interface ITaskUseCases : ITaskQueries
 {
     /// <summary>Creates an ordinary task and its applicable reminder metadata.</summary>
     Task<ApplicationResult<TaskDto>> CreateAsync(

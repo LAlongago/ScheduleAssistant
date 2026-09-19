@@ -337,7 +337,26 @@ internal sealed class InMemoryTaskRepository : ITaskRepository
     public Task<IReadOnlyList<TaskItem>> GetByRangeAsync(DateOnly rangeStart, DateOnly rangeEnd, CancellationToken cancellationToken = default)
     {
         ThrowIfConfigured();
-        return Task.FromResult<IReadOnlyList<TaskItem>>(_store.Tasks.Values.Where(t => t.PlannedDate is DateOnly date && date >= rangeStart && date <= rangeEnd).Select(TaskUseCaseTestContext.Clone).ToArray());
+        return Task.FromResult<IReadOnlyList<TaskItem>>(_store.Tasks.Values
+            .Where(task =>
+                task.PlannedDate is DateOnly plannedDate && plannedDate >= rangeStart && plannedDate <= rangeEnd
+                || task.Deadline?.LocalDate is DateOnly deadlineDate && deadlineDate >= rangeStart && deadlineDate <= rangeEnd)
+            .Select(TaskUseCaseTestContext.Clone)
+            .ToArray());
+    }
+
+    public Task<IReadOnlyList<TaskItem>> GetTodayPendingAsync(DateOnly todayLocal, DateTimeOffset nowUtc, CancellationToken cancellationToken = default)
+    {
+        ThrowIfConfigured();
+        var normalizedNow = nowUtc.ToUniversalTime();
+        return Task.FromResult<IReadOnlyList<TaskItem>>(_store.Tasks.Values
+            .Where(task => task.WorkflowStatus != WorkflowStatus.Completed)
+            .Where(task =>
+                task.PlannedDate is DateOnly plannedDate && plannedDate <= todayLocal
+                || task.DeadlineUtc is DateTimeOffset deadline && deadline < normalizedNow
+                || task.Deadline?.LocalDate == todayLocal)
+            .Select(TaskUseCaseTestContext.Clone)
+            .ToArray());
     }
 
     public Task<IReadOnlyList<TaskItem>> GetUpcomingDeadlinesAsync(DateTimeOffset nowUtc, DateTimeOffset? untilUtc, CancellationToken cancellationToken = default)
@@ -345,6 +364,75 @@ internal sealed class InMemoryTaskRepository : ITaskRepository
         ThrowIfConfigured();
         return Task.FromResult<IReadOnlyList<TaskItem>>(_store.Tasks.Values.Where(t => t.WorkflowStatus != WorkflowStatus.Completed && t.DeadlineUtc >= nowUtc && (!untilUtc.HasValue || t.DeadlineUtc <= untilUtc)).Select(TaskUseCaseTestContext.Clone).ToArray());
     }
+
+    public Task<IReadOnlyList<TaskItem>> GetDeadlinesAsync(DateTimeOffset nowUtc, DateTimeOffset? untilUtc, bool includeOverdue, CancellationToken cancellationToken = default)
+    {
+        ThrowIfConfigured();
+        var normalizedNow = nowUtc.ToUniversalTime();
+        return Task.FromResult<IReadOnlyList<TaskItem>>(_store.Tasks.Values
+            .Where(task => task.WorkflowStatus != WorkflowStatus.Completed && task.DeadlineUtc.HasValue)
+            .Where(task =>
+                includeOverdue && task.DeadlineUtc!.Value < normalizedNow
+                || task.DeadlineUtc!.Value >= normalizedNow
+                && (!untilUtc.HasValue || task.DeadlineUtc.Value <= untilUtc.Value.ToUniversalTime()))
+            .Select(TaskUseCaseTestContext.Clone)
+            .ToArray());
+    }
+
+    public Task<IReadOnlyList<TaskItem>> SearchAsync(TaskSearchFilter filter, long offset, int limit, CancellationToken cancellationToken = default)
+    {
+        ThrowIfConfigured();
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
+        ArgumentOutOfRangeException.ThrowIfLessThan(limit, 1);
+
+        var ordered = SearchItems(filter).ToArray();
+        var page = offset >= ordered.Length
+            ? Array.Empty<TaskItem>()
+            : ordered.Skip((int)Math.Min(offset, int.MaxValue)).Take(limit).Select(TaskUseCaseTestContext.Clone).ToArray();
+        return Task.FromResult<IReadOnlyList<TaskItem>>(page);
+    }
+
+    public Task<long> CountSearchAsync(TaskSearchFilter filter, CancellationToken cancellationToken = default)
+    {
+        ThrowIfConfigured();
+        return Task.FromResult(SearchItems(filter).LongCount());
+    }
+
+    private IEnumerable<TaskItem> SearchItems(TaskSearchFilter filter)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        var normalizedNow = filter.NowUtc.ToUniversalTime();
+        var keyword = string.IsNullOrWhiteSpace(filter.Keyword) ? null : filter.Keyword;
+        return _store.Tasks.Values
+            .Where(task => !filter.CategoryId.HasValue || task.CategoryId == filter.CategoryId.Value)
+            .Where(task => !filter.Priority.HasValue || task.Priority == filter.Priority.Value)
+            .Where(task => !filter.WorkflowStatus.HasValue || task.WorkflowStatus == filter.WorkflowStatus.Value)
+            .Where(task =>
+            {
+                var isOverdue = task.WorkflowStatus != WorkflowStatus.Completed
+                    && task.DeadlineUtc is DateTimeOffset deadline
+                    && deadline < normalizedNow;
+                return !filter.IsOverdue.HasValue || filter.IsOverdue.Value == isOverdue;
+            })
+            .Where(task => keyword is null ||
+                Contains(task.Title, keyword)
+                || Contains(task.Location, keyword)
+                || Contains(task.Description, keyword)
+                || Contains(task.Materials, keyword)
+                || Contains(task.Notes, keyword))
+            .OrderBy(task => task.PlannedDate.HasValue ? 0 : 1)
+            .ThenBy(task => task.PlannedDate)
+            .ThenBy(task => task.PlannedStart.HasValue ? 1 : 0)
+            .ThenBy(task => task.PlannedStart)
+            .ThenBy(task => task.DeadlineUtc.HasValue ? 0 : 1)
+            .ThenBy(task => task.DeadlineUtc)
+            .ThenByDescending(task => task.Priority)
+            .ThenBy(task => task.CreatedAtUtc)
+            .ThenBy(task => task.Id);
+    }
+
+    private static bool Contains(string? value, string keyword) =>
+        value?.Contains(keyword, StringComparison.OrdinalIgnoreCase) == true;
 
     public Task<PersistenceCommitResult<TaskItem>> AddAsync(TaskItem item, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
