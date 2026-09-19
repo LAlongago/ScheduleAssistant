@@ -73,7 +73,7 @@
                                Margin="0,8,0,0">
                         <TextBlock Margin="0,0,18,0" Style="{StaticResource Text.Caption}">
                             <Run Text="⌖ " />
-                            <Run Text="{Binding LocationText}" />
+                            <Run Text="{Binding LocationText, Mode=OneWay}" />
                         </TextBlock>
                         <TextBlock Style="{StaticResource Text.Caption}"
                                    Text="{Binding StatusText}" />
