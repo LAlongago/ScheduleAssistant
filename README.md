@@ -4,16 +4,22 @@ ScheduleAssistant is a local-first Windows desktop schedule and deadline assista
 
 ## DEV-001 scope
 
-This repository currently contains the DEV-001 engineering skeleton only:
+The repository now contains the DEV-001 engineering skeleton and the DEV-040 WPF shell foundation:
 
 - layered Domain, Application, Infrastructure, and WPF Presentation projects;
 - xUnit test projects, including dependency-direction tests;
 - centralized SDK, compiler, analyzer, and NuGet package-version settings;
-- a minimal WPF startup window wired through a Host/DI composition root;
+- a WPF startup window wired through a Host/DI composition root;
 - ADR and task-handoff templates; and
 - a Windows GitHub Actions workflow for restore, Release build, and tests.
 
 No business behavior, database migration, schema, table, repository, notification adapter, tray integration, or visual design system is implemented in DEV-001.
+
+## Current running interface (DEV-040)
+
+The WPF application starts with a single three-part shell: a collapsible left navigation rail, a header with the current page title/date controls/search/new-task entry points, and the active page content region. The shell includes Today, Week, Month, Upcoming Deadlines, All Tasks, and Settings page placeholders, shared loading/empty/error/ready state presentation, and standard/compact task-card previews.
+
+DEV-040 uses temporary, explicitly labelled design data only. Search, new-task, date navigation, and task completion controls are disabled until their follow-up Application/View tasks are connected; the shell does not register a fake `ITaskUseCases`, fake repository, or write design data to SQLite. Light and alternate Dark resource dictionaries centralize color, typography, spacing, radius, border, focus, and state tokens.
 
 ## INTEGRATION-001 state
 

@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ScheduleAssistant.Application\ScheduleAssistant.Application.csproj" />
     <ProjectReference Include="..\ScheduleAssistant.Infrastructure\ScheduleAssistant.Infrastructure.csproj" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>

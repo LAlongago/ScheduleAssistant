@@ -1,17 +1,20 @@
 using System.Windows;
+using ScheduleAssistant.Presentation.ViewModels;
 
 namespace ScheduleAssistant.Presentation;
 
 /// <summary>
-/// Minimal startup window for DEV-001.
+/// Main window for the DEV-040 application shell.
 /// </summary>
 public partial class MainWindow : Window
 {
     /// <summary>
-    /// Initializes the minimal startup window.
+    /// Initializes the main window through constructor-injected shell state.
     /// </summary>
-    public MainWindow()
+    public MainWindow(MainWindowViewModel viewModel)
     {
+        ArgumentNullException.ThrowIfNull(viewModel);
         InitializeComponent();
+        DataContext = viewModel;
     }
 }
