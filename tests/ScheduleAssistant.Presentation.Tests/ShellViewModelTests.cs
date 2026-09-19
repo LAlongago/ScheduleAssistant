@@ -22,19 +22,6 @@ public sealed class ShellViewModelTests
     }
 
     [Fact]
-    public void ToggleNavigation_WhenExecutedTwice_ShouldRestoreExpandedState()
-    {
-        var viewModel = new MainWindowViewModel(CreateNavigation(), new FixedTimeProvider());
-
-        Assert.True(viewModel.IsNavigationExpanded);
-        viewModel.ToggleNavigationCommand.Execute(null);
-        Assert.False(viewModel.IsNavigationExpanded);
-        viewModel.ToggleNavigationCommand.Execute(null);
-
-        Assert.True(viewModel.IsNavigationExpanded);
-    }
-
-    [Fact]
     public void SetContentState_WhenPageStateChanges_ShouldExposeTextAndState()
     {
         var page = new TodayPageViewModel();

@@ -1,5 +1,4 @@
 <Window x:Class="ScheduleAssistant.Presentation.MainWindow"
-        x:Name="RootWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:ScheduleAssistant.Presentation.ViewModels"
@@ -45,28 +44,17 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Border x:Name="Sidebar"
-                Grid.RowSpan="3"
+        <Border Grid.RowSpan="3"
                 Grid.Column="0"
                 Background="{DynamicResource Brush.Surface}"
                 BorderBrush="{DynamicResource Brush.Border}"
-                BorderThickness="0,0,1,0">
-            <Border.Style>
-                <Style TargetType="{x:Type Border}">
-                    <Setter Property="Width" Value="248" />
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding DataContext.IsNavigationExpanded, ElementName=RootWindow}" Value="False">
-                            <Setter Property="Width" Value="80" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Style>
+                BorderThickness="0,0,1,0"
+                Width="248">
             <Grid Margin="{DynamicResource Spacing.Sidebar}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <StackPanel Orientation="Horizontal">
                     <Border Background="{DynamicResource Brush.Accent}"
@@ -81,8 +69,7 @@
                                    AutomationProperties.Name="ScheduleAssistant" />
                     </Border>
                     <StackPanel Margin="{DynamicResource Spacing.GapSmall}"
-                                VerticalAlignment="Center"
-                                Visibility="{Binding IsNavigationExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                VerticalAlignment="Center">
                         <TextBlock FontSize="{DynamicResource FontSize.Subheading}"
                                    FontWeight="{DynamicResource FontWeight.SemiBold}"
                                    Text="ScheduleAssistant" />
@@ -92,8 +79,7 @@
                 <TextBlock Grid.Row="1"
                            Margin="0,30,0,10"
                            Style="{StaticResource Text.Overline}"
-                           Text="工作区"
-                           Visibility="{Binding IsNavigationExpanded, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                           Text="工作区" />
                 <ItemsControl Grid.Row="2" ItemsSource="{Binding NavigationItems}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -114,26 +100,12 @@
                                     <TextBlock Margin="{DynamicResource Spacing.IconLabel}"
                                                VerticalAlignment="Center"
                                                FontSize="{DynamicResource FontSize.Navigation}"
-                                               Text="{Binding Label}"
-                                               Visibility="{Binding DataContext.IsNavigationExpanded, Converter={StaticResource BooleanToVisibilityConverter}, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                               Text="{Binding Label}" />
                                 </DockPanel>
                             </ToggleButton>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Button Grid.Row="3"
-                        AutomationProperties.Name="折叠或展开导航"
-                        Command="{Binding ToggleNavigationCommand}"
-                        Style="{StaticResource Button.Quiet}"
-                        ToolTip="折叠或展开导航">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock FontSize="18" Text="‹" />
-                        <TextBlock Margin="{DynamicResource Spacing.IconLabel}"
-                                   VerticalAlignment="Center"
-                                   Text="折叠导航"
-                                   Visibility="{Binding IsNavigationExpanded, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                    </StackPanel>
-                </Button>
             </Grid>
         </Border>
 
@@ -144,25 +116,18 @@
                 BorderThickness="0,0,0,1">
             <Grid Margin="{DynamicResource Spacing.Header}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="220" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Button Grid.Column="0"
-                        AutomationProperties.Name="折叠或展开导航"
-                        Command="{Binding ToggleNavigationCommand}"
-                        Content="☰"
-                        Style="{StaticResource Button.Icon}"
-                        ToolTip="折叠或展开导航" />
-                <StackPanel Grid.Column="1" Margin="{DynamicResource Spacing.HeaderTitle}">
+                <StackPanel Grid.Column="0" Margin="{DynamicResource Spacing.HeaderTitle}">
                     <TextBlock Style="{StaticResource Text.PageTitle}" Text="{Binding CurrentTitle}" />
                     <TextBlock Margin="{DynamicResource Spacing.GapXSmall}"
                                Style="{StaticResource Text.Caption}"
                                Text="{Binding CurrentSubtitle}" />
                 </StackPanel>
-                <StackPanel Grid.Column="2"
+                <StackPanel Grid.Column="1"
                             Margin="0,0,16,0"
                             Orientation="Horizontal">
                     <Button AutomationProperties.Name="上一个日期"
@@ -181,12 +146,12 @@
                             Style="{StaticResource Button.Icon}"
                             ToolTip="{Binding DateNavigationHint}" />
                 </StackPanel>
-                <TextBox Grid.Column="3"
+                <TextBox Grid.Column="2"
                          AutomationProperties.Name="搜索任务"
                          IsEnabled="{Binding IsSearchEnabled}"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                          ToolTip="{Binding SearchHint}" />
-                <Button Grid.Column="4"
+                <Button Grid.Column="3"
                         Margin="{DynamicResource Spacing.IconLabel}"
                         AutomationProperties.Name="新建任务"
                         Command="{Binding CreateTaskCommand}"

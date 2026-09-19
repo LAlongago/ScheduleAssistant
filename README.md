@@ -17,7 +17,7 @@ No business behavior, database migration, schema, table, repository, notificatio
 
 ## Current running interface (DEV-040)
 
-The WPF application starts with a single three-part shell: a collapsible left navigation rail, a header with the current page title/date controls/search/new-task entry points, and the active page content region. The shell includes Today, Week, Month, Upcoming Deadlines, All Tasks, and Settings page placeholders, shared loading/empty/error/ready state presentation, and standard/compact task-card previews.
+The WPF application starts with a single three-part shell: a fixed left navigation rail, a header with the current page title/date controls/search/new-task entry points, and the active page content region. The shell includes Today, Week, Month, Upcoming Deadlines, All Tasks, and Settings page placeholders, shared loading/empty/error/ready state presentation, and standard/compact task-card previews.
 
 DEV-040 uses temporary, explicitly labelled design data only. Search, new-task, date navigation, and task completion controls are disabled until their follow-up Application/View tasks are connected; the shell does not register a fake `ITaskUseCases`, fake repository, or write design data to SQLite. Light and alternate Dark resource dictionaries centralize color, typography, spacing, radius, border, focus, and state tokens.
 

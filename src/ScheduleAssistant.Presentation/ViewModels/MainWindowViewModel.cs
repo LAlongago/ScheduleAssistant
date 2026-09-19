@@ -18,7 +18,6 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly string _searchHint;
     private readonly string _createTaskHint;
     private readonly string _shellNotice;
-    private bool _isNavigationExpanded = true;
     private string _searchText = string.Empty;
 
     /// <summary>
@@ -39,7 +38,6 @@ public sealed class MainWindowViewModel : ObservableObject
         _shellNotice = "DEV-040 设计预览 · 当前数据为临时展示内容，不会写入数据库";
         DisplayDate = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         NavigateCommand = new RelayCommand<NavigationPage>(Navigate);
-        ToggleNavigationCommand = new RelayCommand(ToggleNavigation);
         PreviousDateCommand = new RelayCommand(DisabledDateAction, () => false);
         CurrentDateCommand = new RelayCommand(DisabledDateAction, () => false);
         NextDateCommand = new RelayCommand(DisabledDateAction, () => false);
@@ -65,13 +63,6 @@ public sealed class MainWindowViewModel : ObservableObject
 
     /// <summary>Gets the localized display form of the shell date.</summary>
     public string DisplayDateText => DisplayDate.ToString("yyyy年M月d日", CultureInfo.CurrentCulture);
-
-    /// <summary>Gets or sets whether the left navigation shows labels.</summary>
-    public bool IsNavigationExpanded
-    {
-        get => _isNavigationExpanded;
-        private set => SetProperty(ref _isNavigationExpanded, value);
-    }
 
     /// <summary>Gets or sets the future search input binding.</summary>
     public string SearchText
@@ -104,9 +95,6 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Gets the navigation command bound by the left rail.</summary>
     public IRelayCommand<NavigationPage> NavigateCommand { get; }
 
-    /// <summary>Gets the navigation collapse/expand command.</summary>
-    public IRelayCommand ToggleNavigationCommand { get; }
-
     /// <summary>Gets the disabled previous-date command placeholder.</summary>
     public IRelayCommand PreviousDateCommand { get; }
 
@@ -120,8 +108,6 @@ public sealed class MainWindowViewModel : ObservableObject
     public IRelayCommand CreateTaskCommand { get; }
 
     private void Navigate(NavigationPage page) => _navigationService.Navigate(page);
-
-    private void ToggleNavigation() => IsNavigationExpanded = !IsNavigationExpanded;
 
     private static void DisabledDateAction()
     {
