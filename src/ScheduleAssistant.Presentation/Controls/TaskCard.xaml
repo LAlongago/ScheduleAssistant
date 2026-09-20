@@ -4,6 +4,29 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:ScheduleAssistant.Presentation.ViewModels"
              xmlns:controls="clr-namespace:ScheduleAssistant.Presentation.Controls">
+    <UserControl.Resources>
+        <controls:CategoryColorConverter x:Key="CategoryColorConverter" />
+        <Style x:Key="TypeAccentStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="{DynamicResource Brush.CategoryOther}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Research}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryResearch}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Course}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryCourse}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Meeting}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryMeeting}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Administration}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryAdmin}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Life}">
+                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryLife}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
     <Border Style="{StaticResource CardBorder}">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -132,27 +155,4 @@
             </Grid>
         </Grid>
     </Border>
-    <UserControl.Resources>
-        <controls:CategoryColorConverter x:Key="CategoryColorConverter" />
-        <Style x:Key="TypeAccentStyle" TargetType="{x:Type Border}">
-            <Setter Property="Background" Value="{DynamicResource Brush.CategoryOther}" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Research}">
-                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryResearch}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Course}">
-                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryCourse}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Meeting}">
-                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryMeeting}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Administration}">
-                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryAdmin}" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding CategoryAccent}" Value="{x:Static vm:CategoryAccent.Life}">
-                    <Setter Property="Background" Value="{DynamicResource Brush.CategoryLife}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-    </UserControl.Resources>
 </UserControl>
