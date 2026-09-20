@@ -1,0 +1,69 @@
+<UserControl x:Class="ScheduleAssistant.Presentation.Controls.DigitalTimePicker"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinHeight="38"
+             Focusable="False">
+    <Validation.ErrorTemplate>
+        <ControlTemplate>
+            <Border BorderBrush="{DynamicResource Brush.Danger}"
+                    BorderThickness="{DynamicResource BorderThickness.Focus}"
+                    CornerRadius="{DynamicResource Radius.Control}">
+                <AdornedElementPlaceholder />
+            </Border>
+        </ControlTemplate>
+    </Validation.ErrorTemplate>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="22" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="4" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="36" />
+        </Grid.ColumnDefinitions>
+        <ComboBox x:Name="HourTensSelector"
+                  Grid.Column="0"
+                  AutomationProperties.Name="小时十位"
+                  SelectionChanged="OnDigitSelectionChanged"
+                  Style="{StaticResource ComboBox.Digit}"
+                  ToolTip="选择小时十位" />
+        <ComboBox x:Name="HourOnesSelector"
+                  Grid.Column="2"
+                  AutomationProperties.Name="小时个位"
+                  SelectionChanged="OnDigitSelectionChanged"
+                  Style="{StaticResource ComboBox.Digit}"
+                  ToolTip="选择小时个位" />
+        <TextBlock Grid.Column="3"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontFamily="{DynamicResource FontFamily.Monospace}"
+                   FontSize="18"
+                   FontWeight="{DynamicResource FontWeight.SemiBold}"
+                   Text=":" />
+        <ComboBox x:Name="MinuteTensSelector"
+                  Grid.Column="4"
+                  AutomationProperties.Name="分钟十位"
+                  SelectionChanged="OnDigitSelectionChanged"
+                  Style="{StaticResource ComboBox.Digit}"
+                  ToolTip="选择分钟十位" />
+        <ComboBox x:Name="MinuteOnesSelector"
+                  Grid.Column="6"
+                  AutomationProperties.Name="分钟个位"
+                  SelectionChanged="OnDigitSelectionChanged"
+                  Style="{StaticResource ComboBox.Digit}"
+                  ToolTip="选择分钟个位" />
+        <Button Grid.Column="7"
+                Width="30"
+                Height="30"
+                Margin="6,0,0,0"
+                AutomationProperties.Name="清除时间"
+                Click="OnClearClicked"
+                Content="×"
+                FontSize="16"
+                Style="{StaticResource Button.Quiet}"
+                ToolTip="清除时间" />
+    </Grid>
+</UserControl>

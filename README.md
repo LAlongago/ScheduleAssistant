@@ -17,7 +17,7 @@ The Presentation composition root resolves one `TaskUseCases` instance as both `
 `ITaskQueries`, and one `InProcessEventBus` as `IApplicationEventPublisher`. SQLite initialization is
 gated once before query pages run.
 
-## Current running interface (INTEGRATION-008)
+## Current running interface (INTEGRATION-008 + DEV-043)
 
 The WPF application starts with a single three-part shell: a fixed left navigation rail, a header with
 the current page title/date controls/search/new-task entry points, and the active page content region.
@@ -27,9 +27,11 @@ Available now:
 
 - create and edit ordinary tasks, including validation, plan times, Deadline, reminder choice, location,
   details, materials, notes, dirty-form cancellation, optimistic-conflict reload, and explicit DST handling;
+- a simplified-Chinese Windows font stack led by Microsoft YaHei UI, flat selection controls, four-digit
+  time pickers, equal-width editor sections, and collapsed optional Deadline/content sections;
 - immutable migration `002_seed_default_categories.sql` with six idempotent default categories;
 - Today grouping for overdue, planned-past, today plans, today-only Deadlines, and completed tasks;
-- cached Deadline countdowns, range filtering (24 hours/3 days/7 days/30 days/all), task completion and
+- cached Deadline countdowns, upcoming-page range filtering capped at 7 days (24 hours/3 days/7 days), task completion and
   cancellation, and event-driven local refresh of Today and Upcoming Deadlines.
 
 Still intentionally placeholder-only:

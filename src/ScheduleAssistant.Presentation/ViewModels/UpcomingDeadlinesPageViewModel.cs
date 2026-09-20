@@ -52,7 +52,7 @@ public sealed class UpcomingDeadlinesPageViewModel : PageViewModelBase, IDisposa
     private IDisposable? _eventSubscription;
     private CancellationTokenSource? _refreshCancellation;
     private Task _lastLoadTask = Task.CompletedTask;
-    private DeadlineQueryRange _selectedRange = DeadlineQueryRange.All;
+    private DeadlineQueryRange _selectedRange = DeadlineQueryRange.Next7Days;
     private bool _disposed;
 
     /// <summary>Creates an inert instance for shell unit tests that do not load data.</summary>
@@ -128,7 +128,7 @@ public sealed class UpcomingDeadlinesPageViewModel : PageViewModelBase, IDisposa
     /// <summary>Selects a supported range and refreshes only the Deadline query.</summary>
     public Task SelectRangeAsync(DeadlineQueryRange range)
     {
-        if (!Enum.IsDefined(range))
+        if (!RangeOptions.Any(option => option.Value == range))
         {
             return Task.CompletedTask;
         }
@@ -314,9 +314,7 @@ public sealed class UpcomingDeadlinesPageViewModel : PageViewModelBase, IDisposa
         {
             new DeadlineRangeOptionViewModel(DeadlineQueryRange.Next24Hours, "24 小时"),
             new DeadlineRangeOptionViewModel(DeadlineQueryRange.Next3Days, "3 天"),
-            new DeadlineRangeOptionViewModel(DeadlineQueryRange.Next7Days, "7 天"),
-            new DeadlineRangeOptionViewModel(DeadlineQueryRange.Next30Days, "30 天"),
-            new DeadlineRangeOptionViewModel(DeadlineQueryRange.All, "全部")
+            new DeadlineRangeOptionViewModel(DeadlineQueryRange.Next7Days, "7 天")
         };
         options[^1].SetSelected(true);
         return options;

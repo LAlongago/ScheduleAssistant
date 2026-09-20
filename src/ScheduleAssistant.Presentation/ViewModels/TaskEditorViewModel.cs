@@ -76,7 +76,6 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     private readonly bool _recurrenceEnabled;
     private DateTimeOffset? _confirmedDeadlineUtc;
     private long _expectedVersion;
-    private WorkflowStatus _workflowStatus = WorkflowStatus.Pending;
     private string _title = string.Empty;
     private Guid _selectedCategoryId;
     private TaskPriority _selectedPriority = TaskPriority.Normal;
@@ -194,21 +193,6 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
 
     /// <summary>Gets whether a consumer should perform a lightweight local refresh.</summary>
     public bool RequiresRefresh => LastPostCommitEventStatus == PostCommitEventStatus.RefreshRequired;
-
-    /// <summary>Gets the current workflow status. It is read-only in this editor.</summary>
-    public WorkflowStatus WorkflowStatus => _workflowStatus;
-
-    /// <summary>Gets a localized read-only status label.</summary>
-    public string StatusText => _workflowStatus switch
-    {
-        WorkflowStatus.Pending => "待处理",
-        WorkflowStatus.InProgress => "进行中",
-        WorkflowStatus.Completed => "已完成",
-        _ => "未知状态"
-    };
-
-    /// <summary>Gets whether the workflow status control is read-only.</summary>
-    public bool IsStatusReadOnly => _request.Mode is TaskEditorMode.Create or TaskEditorMode.Edit;
 
     /// <summary>Gets or sets the task title.</summary>
     public string Title
@@ -590,10 +574,6 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
             {
                 SelectedCategoryId = options[0].Id;
             }
-
-            _workflowStatus = WorkflowStatus.Pending;
-            OnPropertyChanged(nameof(WorkflowStatus));
-            OnPropertyChanged(nameof(StatusText));
         }
         finally
         {
@@ -625,9 +605,6 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
             Description = task.Description ?? string.Empty;
             Materials = task.Materials ?? string.Empty;
             Notes = task.Notes ?? string.Empty;
-            _workflowStatus = task.WorkflowStatus;
-            OnPropertyChanged(nameof(WorkflowStatus));
-            OnPropertyChanged(nameof(StatusText));
             OnPropertyChanged(nameof(TimeZoneDisplayName));
         }
         finally

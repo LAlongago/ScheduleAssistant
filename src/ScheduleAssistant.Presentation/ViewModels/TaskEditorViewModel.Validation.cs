@@ -312,7 +312,14 @@ public sealed partial class TaskEditorViewModel
                 AddError(errors, nameof(DeadlineDateValue), "请选择 Deadline 日期。");
             }
 
-            _ = ParseTime(DeadlineTimeText, nameof(DeadlineTimeText), errors);
+            if (string.IsNullOrWhiteSpace(DeadlineTimeText))
+            {
+                AddError(errors, nameof(DeadlineTimeText), "请选择 Deadline 时间。");
+            }
+            else
+            {
+                _ = ParseTime(DeadlineTimeText, nameof(DeadlineTimeText), errors);
+            }
             if (string.IsNullOrWhiteSpace(TimeZoneId))
             {
                 AddError(errors, nameof(TimeZoneId), "未找到可用的 Windows 时区。");

@@ -93,15 +93,15 @@ public sealed class TodayAndDeadlineViewModelTests
     }
 
     [Fact]
-    public async Task UpcomingPage_WhenRangeChanges_ShouldPassApplicationRangeAndKeepReturnedOrder()
+    public async Task UpcomingPage_WhenRangeChanges_ShouldLimitOptionsToSevenDaysAndKeepReturnedOrder()
     {
         var useCases = new FakeTaskUseCases();
-        var allFirst = CreateEntry("全部第一", deadlineUtc: NowUtc.AddDays(5), isDeadlineOnDate: true);
-        var allSecond = CreateEntry("全部第二", deadlineUtc: NowUtc.AddDays(6), isDeadlineOnDate: true);
+        var weekFirst = CreateEntry("七天第一", deadlineUtc: NowUtc.AddDays(5), isDeadlineOnDate: true);
+        var weekSecond = CreateEntry("七天第二", deadlineUtc: NowUtc.AddDays(6), isDeadlineOnDate: true);
         var rangeFirst = CreateEntry("范围第一", deadlineUtc: NowUtc.AddHours(10), isDeadlineOnDate: true);
         var rangeSecond = CreateEntry("范围第二", deadlineUtc: NowUtc.AddDays(2), isDeadlineOnDate: true);
-        useCases.DeadlinesByRange[DeadlineQueryRange.All] = Success(
-            new DeadlineQueryResult(new[] { allFirst, allSecond }, Array.Empty<CalendarEntry>()));
+        useCases.DeadlinesByRange[DeadlineQueryRange.Next7Days] = Success(
+            new DeadlineQueryResult(new[] { weekFirst, weekSecond }, Array.Empty<CalendarEntry>()));
         useCases.DeadlinesByRange[DeadlineQueryRange.Next3Days] = Success(
             new DeadlineQueryResult(new[] { rangeFirst, rangeSecond }, Array.Empty<CalendarEntry>()));
 
@@ -110,13 +110,26 @@ public sealed class TodayAndDeadlineViewModelTests
         await page.SelectRangeAsync(DeadlineQueryRange.Next3Days);
 
         Assert.Equal(
-            new[] { DeadlineQueryRange.All, DeadlineQueryRange.Next3Days },
+            new[] { DeadlineQueryRange.Next7Days, DeadlineQueryRange.Next3Days },
             useCases.DeadlineRanges);
         Assert.Equal(DeadlineQueryRange.Next3Days, page.SelectedRange);
         Assert.Equal("范围第一", page.UpcomingTasks[0].Title);
         Assert.Equal("范围第二", page.UpcomingTasks[1].Title);
         Assert.Single(page.RangeOptions, option => option.IsSelected && option.Value == DeadlineQueryRange.Next3Days);
+        Assert.Equal(
+            new[]
+            {
+                DeadlineQueryRange.Next24Hours,
+                DeadlineQueryRange.Next3Days,
+                DeadlineQueryRange.Next7Days
+            },
+            page.RangeOptions.Select(option => option.Value));
         Assert.Equal(PageContentState.Ready, page.ContentState);
+
+        await page.SelectRangeAsync(DeadlineQueryRange.Next30Days);
+
+        Assert.Equal(DeadlineQueryRange.Next3Days, page.SelectedRange);
+        Assert.Equal(2, useCases.DeadlineRanges.Count);
     }
 
     [Fact]

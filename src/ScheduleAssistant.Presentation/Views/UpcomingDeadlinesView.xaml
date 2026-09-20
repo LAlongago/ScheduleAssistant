@@ -33,7 +33,8 @@
                                          GroupName="DeadlineRange"
                                          IsChecked="{Binding IsSelected, Mode=OneWay}"
                                          Command="{Binding DataContext.SelectRangeCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                         CommandParameter="{Binding Value}" />
+                                         CommandParameter="{Binding Value}"
+                                         Style="{StaticResource RadioButton.Segmented}" />
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

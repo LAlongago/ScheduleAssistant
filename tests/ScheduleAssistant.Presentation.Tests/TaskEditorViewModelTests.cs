@@ -39,6 +39,22 @@ public sealed class TaskEditorViewModelTests
     }
 
     [Fact]
+    public async Task EnableDeadline_WhenTimeIsNotSelected_ShouldRequireDeadlineTime()
+    {
+        var fixture = await CreateFixtureAsync();
+        fixture.ViewModel.Title = "选择截止时间";
+        fixture.ViewModel.HasDeadline = true;
+        fixture.ViewModel.DeadlineDateValue = new DateTime(2026, 9, 21);
+
+        Assert.Contains("请选择 Deadline 时间。", fixture.ViewModel.ValidationMessages);
+        Assert.False(fixture.ViewModel.SaveCommand.CanExecute(null));
+
+        await fixture.ViewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Empty(fixture.UseCases.CreatedCommands);
+    }
+
+    [Fact]
     public async Task Save_WhenApplicationSucceeds_ShouldCallCreateAndPublishRefreshSignal()
     {
         var fixture = await CreateFixtureAsync(
