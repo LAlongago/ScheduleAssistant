@@ -45,6 +45,7 @@
 
 - 推送与 PR：已推送整合分支并创建 [PR #12](https://github.com/LAlongago/ScheduleAssistant/pull/12)，只推送了 `integration/dev-041-dev-042-core-ui`。
 - PR CI：首次运行失败，失败步骤为 `ScheduleAssistant.Architecture.Tests.DependencyDirectionTests.Presentation_ShouldDependOnApplicationAndInfrastructure`；[Actions run 35496602126](https://github.com/LAlongago/ScheduleAssistant/actions/runs/35496602126)。Application、Domain、Infrastructure、Presentation 和新增 Presentation 测试均已通过，失败只发生在架构依赖断言。
+- DEV-047 更新后的 [Actions run 35513091955](https://github.com/LAlongago/ScheduleAssistant/actions/runs/35513091955) 结果相同：Domain 102、Application 23、Infrastructure 25、Presentation 20 全部通过；唯一失败仍为上述架构依赖断言，未出现新的代码或测试失败。当前 PR HEAD 为 `bedf314767519c0e25b6b32ed25a02bfe45ab23f`。
 - 人工验收：尚未完成。必须在真实 WPF 窗口中验证新建/编辑/保存失败保留内容、脏表单关闭、完成/取消完成、倒计时刷新和重启持久化；不可观察时不得声称视觉通过。
 
 ## DEV-047 后继版本重新整合审查
@@ -68,5 +69,6 @@
 
 - 核心整合合并提交：`3be052408d02eac50f95074807348f9a579f168d`。
 - 任务卡闪退修复提交：`76f1c21`。
-- 后续 PR CI、人工验收和合并后的文档更新提交将在同一 handoff 继续补录。
+- DEV-047 累计版本前移至：`b65da8b`；本轮交接记录提交并已推送：`bedf314767519c0e25b6b32ed25a02bfe45ab23f`。
+- PR CI、人工验收和合并后的文档更新提交将在同一 handoff 继续补录。
 - Git 元数据存在；不使用伪造 SHA。
