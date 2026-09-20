@@ -47,6 +47,15 @@
 - PR CI：首次运行失败，失败步骤为 `ScheduleAssistant.Architecture.Tests.DependencyDirectionTests.Presentation_ShouldDependOnApplicationAndInfrastructure`；[Actions run 35496602126](https://github.com/LAlongago/ScheduleAssistant/actions/runs/35496602126)。Application、Domain、Infrastructure、Presentation 和新增 Presentation 测试均已通过，失败只发生在架构依赖断言。
 - 人工验收：尚未完成。必须在真实 WPF 窗口中验证新建/编辑/保存失败保留内容、脏表单关闭、完成/取消完成、倒计时刷新和重启持久化；不可观察时不得声称视觉通过。
 
+## DEV-047 后继版本重新整合审查
+
+- 未发现独立的 `dev-047` 分支；最新版本位于 `codex/dev-043-ui-refinement`，其 DEV-047 实现提交为 `e122c280adcb8774b2debdbcf8db6fe5b32d3177`，交接提交为 `b65da8b287c99cea7325cefe4c7203488d1c7e75`。
+- 该分支相对原整合 HEAD `34b1b68` 是严格后继链，包含 DEV-043 至 DEV-047 的累计 Presentation UI 修订，无分叉、无冲突；源 worktree 仅保留既有未跟踪 `.worktrees/`，未修改其内容。
+- 已在整合 worktree 通过 `git merge --ff-only codex/dev-043-ui-refinement` 前移整合分支；未写入来源分支，当前整合 HEAD 为 `b65da8b`。
+- DEV-047 仅调整可选分区展开高度与 Presentation 测试，未修改 Domain/Application 公共契约、数据库、migration 或 seed；此前的 TaskCard XAML 资源顺序修复仍保留。
+- 本轮验证：Release solution build 通过（0 警告、0 错误）；Presentation.Tests 20 passed；Infrastructure.Tests 25 passed；`git diff --check` 通过。
+- 本轮 WPF 进程级冒烟通过：主窗口句柄 `2953624`，`Responding=True`，正常关闭退出码 0；最近 10 分钟没有新的 ScheduleAssistant `.NET Runtime`/`Application Error` 事件。当前没有窗口观察通道，因此不宣称视觉通过。
+
 ## 未完成项与已知问题
 
 - Week、Month、AllTasks、搜索、附件、周期和 Windows 集成功能仍是明确占位。
@@ -59,5 +68,5 @@
 
 - 核心整合合并提交：`3be052408d02eac50f95074807348f9a579f168d`。
 - 任务卡闪退修复提交：`76f1c21`。
-- 后续 PR、人工验收和合并后的文档更新提交将在同一 handoff 继续补录。
+- 后续 PR CI、人工验收和合并后的文档更新提交将在同一 handoff 继续补录。
 - Git 元数据存在；不使用伪造 SHA。
