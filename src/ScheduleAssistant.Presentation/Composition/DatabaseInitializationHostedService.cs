@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Hosting;
-using ScheduleAssistant.Infrastructure.Persistence;
-
 namespace ScheduleAssistant.Presentation.Composition;
 
 /// <summary>
@@ -8,18 +6,19 @@ namespace ScheduleAssistant.Presentation.Composition;
 /// </summary>
 public sealed class DatabaseInitializationHostedService : IHostedService
 {
-    private readonly SqliteDatabaseInitializer _initializer;
+    private readonly IDatabaseInitialization _databaseInitialization;
 
     /// <summary>Initializes the startup migration service.</summary>
-    public DatabaseInitializationHostedService(SqliteDatabaseInitializer initializer)
+    public DatabaseInitializationHostedService(IDatabaseInitialization databaseInitialization)
     {
-        _initializer = initializer ?? throw new ArgumentNullException(nameof(initializer));
+        _databaseInitialization = databaseInitialization
+            ?? throw new ArgumentNullException(nameof(databaseInitialization));
     }
 
     /// <inheritdoc />
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        return _initializer.InitializeAsync(cancellationToken);
+        return _databaseInitialization.EnsureInitializedAsync(cancellationToken);
     }
 
     /// <inheritdoc />

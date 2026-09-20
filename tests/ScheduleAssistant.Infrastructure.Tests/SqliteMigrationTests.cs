@@ -19,6 +19,9 @@ public sealed class SqliteMigrationTests
         var migrationName = await ScalarAsync(
             firstConnection,
             "SELECT name FROM schema_migrations WHERE version = 1;");
+        var seedMigrationName = await ScalarAsync(
+            firstConnection,
+            "SELECT name FROM schema_migrations WHERE version = 2;");
         var tables = await ScalarAsync(
             firstConnection,
             "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN (" +
@@ -46,6 +49,7 @@ public sealed class SqliteMigrationTests
         Assert.Equal(firstCount, secondCount);
         Assert.Equal(firstAppliedAt, secondAppliedAt);
         Assert.Equal("001_initial_schema.sql", Convert.ToString(migrationName, CultureInfo.InvariantCulture));
+        Assert.Equal("002_seed_default_categories.sql", Convert.ToString(seedMigrationName, CultureInfo.InvariantCulture));
         Assert.Equal(9L, Convert.ToInt64(tables, CultureInfo.InvariantCulture));
         Assert.Equal(1L, Convert.ToInt64(foreignKeys, CultureInfo.InvariantCulture));
         Assert.Equal("wal", Convert.ToString(journalMode, CultureInfo.InvariantCulture));

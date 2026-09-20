@@ -18,7 +18,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly string _dateNavigationHint;
     private readonly string _searchHint;
     private readonly string _createTaskHint;
-    private readonly string _shellNotice;
+    private string _shellNotice;
     private string _searchText = string.Empty;
 
     /// <summary>
@@ -37,14 +37,14 @@ public sealed class MainWindowViewModel : ObservableObject
         _isDateNavigationEnabled = false;
         _isSearchEnabled = false;
         _isCreateTaskEnabled = taskEditorService is not null;
-        _dateNavigationHint = "日期导航将在后续日历视图任务中接入";
-        _searchHint = "搜索将在后续任务查询视图中接入";
+        _dateNavigationHint = "周、月日历和日期导航将在后续页面任务中开放";
+        _searchHint = "全部任务搜索将在后续查询页面中开放";
         _createTaskHint = taskEditorService is null
-            ? "新建任务编辑器尚未连接"
+            ? "当前组合未提供任务编辑器服务"
             : "打开普通任务编辑器";
         _shellNotice = taskEditorService is null
-            ? "DEV-040 设计预览 · 当前数据为临时展示内容，不会写入数据库"
-            : "DEV-041 任务编辑器已连接 · 页面查询将由后续任务接入";
+            ? "当前组合未连接任务编辑器"
+            : "今天、即将截止和任务编辑器已连接；周、月、全部任务、搜索与系统集成功能按后续任务开放";
         DisplayDate = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         NavigateCommand = new RelayCommand<NavigationPage>(Navigate);
         PreviousDateCommand = new RelayCommand(DisabledDateAction, () => false);
@@ -106,13 +106,13 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Gets the navigation command bound by the left rail.</summary>
     public IRelayCommand<NavigationPage> NavigateCommand { get; }
 
-    /// <summary>Gets the disabled previous-date command placeholder.</summary>
+    /// <summary>Gets the reserved previous-date command placeholder.</summary>
     public IRelayCommand PreviousDateCommand { get; }
 
-    /// <summary>Gets the disabled current-date command placeholder.</summary>
+    /// <summary>Gets the reserved current-date command placeholder.</summary>
     public IRelayCommand CurrentDateCommand { get; }
 
-    /// <summary>Gets the disabled next-date command placeholder.</summary>
+    /// <summary>Gets the reserved next-date command placeholder.</summary>
     public IRelayCommand NextDateCommand { get; }
 
     /// <summary>Gets the new-task command bound to the reusable task-editor service.</summary>
@@ -130,11 +130,27 @@ public sealed class MainWindowViewModel : ObservableObject
         return Task.CompletedTask;
     }
 
-    private Task CreateTaskAsync()
+    private async Task CreateTaskAsync()
     {
-        return _taskEditorService is null
-            ? Task.CompletedTask
-            : _taskEditorService.OpenCreateAsync(DisplayDate);
+        if (_taskEditorService is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _taskEditorService.OpenCreateAsync(DisplayDate).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            _shellNotice = "新建任务操作已取消";
+            OnPropertyChanged(nameof(ShellNotice));
+        }
+        catch
+        {
+            _shellNotice = "无法打开任务编辑器，请重试";
+            OnPropertyChanged(nameof(ShellNotice));
+        }
     }
 
     private void OnNavigationPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

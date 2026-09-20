@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Windows.Threading;
 using ScheduleAssistant.Application.Abstractions.Events;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Infrastructure.Persistence;
@@ -11,8 +12,9 @@ namespace ScheduleAssistant.Presentation.Composition;
 public static class PresentationServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds the single-window shell, real task use cases, database startup gate, navigation state,
-    /// and page/editor ViewModels. No repository is exposed to a ViewModel.
+    /// Adds the single-window shell, real task use cases, one-shot database initialization gate,
+    /// navigation state, page ViewModels, and task-editor services. No repository is exposed to a
+    /// ViewModel.
     /// </summary>
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
@@ -28,7 +30,11 @@ public static class PresentationServiceCollectionExtensions
             serviceProvider.GetRequiredService<TaskUseCases>());
         services.AddSingleton<ITaskQueries>(serviceProvider =>
             serviceProvider.GetRequiredService<TaskUseCases>());
+        services.AddSingleton<IDatabaseInitialization, DatabaseInitialization>();
         services.AddHostedService<DatabaseInitializationHostedService>();
+        services.AddSingleton<IUiDispatcher>(_ => new WpfUiDispatcher(Dispatcher.CurrentDispatcher));
+        services.AddSingleton<IDeadlineRefreshTimer, DeadlineRefreshTimer>();
+        services.AddSingleton<ITaskCardMapper, TaskCardMapper>();
         services.AddSingleton<ITaskEditorInteractionService, WpfTaskEditorInteractionService>();
         services.AddSingleton<ITaskEditorWindowFactory, TaskEditorWindowFactory>();
         services.AddSingleton<ITaskEditorService, TaskEditorService>();

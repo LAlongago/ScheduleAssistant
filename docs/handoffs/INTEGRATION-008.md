@@ -1,0 +1,57 @@
+# INTEGRATION-008 整合交接
+
+## 范围与基线
+
+- 任务：`INTEGRATION-008`，整合 DEV-041 与 DEV-042 的核心 UI。
+- 基线：`origin/main` / `bf333614d4af03cfeb97fd2a2d15bb7674610bcd`。
+- 来源：`feat/dev-041-task-editor` / `c8c6feaeb63995a784e9cdb00a34f829c7ba501d`；
+  `feat/dev-042-today-deadlines` / `080f397e281cdd6193e9b78c1765baee1c551521`。
+- 整合分支：`integration/dev-041-dev-042-core-ui`。
+- 独立 worktree：`E:\Dev\Personal\Todo_list.worktrees\integration-dev-041-dev-042`。
+- 允许范围：Presentation 组合根、任务编辑器与今天/Deadline 页面整合修复；相关 Presentation/Infrastructure 测试；README 与 handoff 文档。
+- 明确不在范围：修改 DEV-041/DEV-042 来源分支或 worktree；修改 Domain/Application 公共契约；修改既有 `001` migration；实现 Week、Month、AllTasks、搜索、附件、周期或后续 Windows 集成功能。
+
+## 完成内容与关键设计选择
+
+- 先核对两条来源分支：均从指定基线直接增加 3 个提交，来源 worktree 均干净；共享组合根提交分别为 `2e8ff698095493c6d839ae0980dadd988913badb` 与 `ba1c47d03d839a795966c8fb0a6e3019a227d134`。
+- 组合根保留一份 `TaskUseCases`，同时映射为 `ITaskUseCases` 与 `ITaskQueries`；保留一份 `InProcessEventBus`，同时映射为 `IApplicationEventPublisher`。
+- `TimeProvider`、`TaskDeadlineResolver`、页面 ViewModel、Dispatcher、倒计时 timer 和编辑器服务均由同一 DI 图解析；`DatabaseInitialization` 是一次性 gate，hosted service 与查询型页面共用该 gate。
+- 保留 DEV-041 的任务新建/编辑、校验、脏表单确认、乐观并发、Deadline/DST 选择与默认类型 seed；保留 DEV-042 的今天分组、同日计划/Deadline 单卡双标记、倒计时、范围筛选、完成/取消完成和事件局部刷新。
+- 移除月页失效的设计任务卡数据，并清理外壳中的 DEV-040 设计预览/临时数据文案；Week、Month、AllTasks、搜索、附件和周期仍显示诚实占位，不伪造功能。
+- 编辑器初始化、保存、重载和外壳新建命令捕获取消/异常，失败时保留编辑内容并显示安全提示；不记录任务正文。
+
+## 修改文件与数据库/接口影响
+
+- 修改 Presentation 组合根、数据库初始化 hosted service、MainWindow/占位页、任务编辑器异常路径、月页空状态及组合注册测试。
+- 保留且整合 DEV-041/DEV-042 新增页面、控件、事件刷新和测试文件。
+- 保留新增不可变 `002_seed_default_categories.sql`；未修改 `001_initial_schema.sql`，仅补充 migration 002 名称断言。
+- 未修改 Domain/Application 公共契约、SQLite 表结构或仓储 SQL。
+
+## 验证命令与结果
+
+以下结果在整合 worktree 记录；SDK 解析使用工作区已配置的
+`E:\Dev\Tools\ScheduleAssistantDotnet\dotnet.exe`（系统 `dotnet` 未安装项目要求的 10.0.100 SDK）。
+
+- `& 'E:\Dev\Tools\ScheduleAssistantDotnet\dotnet.exe' restore .\ScheduleAssistant.sln`：通过。
+- `& 'E:\Dev\Tools\ScheduleAssistantDotnet\dotnet.exe' build .\ScheduleAssistant.sln -c Release --no-restore`：通过，0 警告、0 错误。
+- `& 'E:\Dev\Tools\ScheduleAssistantDotnet\dotnet.exe' test .\tests\ScheduleAssistant.Presentation.Tests\ScheduleAssistant.Presentation.Tests.csproj -c Release --no-build --no-restore`：通过，19 passed / 0 failed / 0 skipped。
+- `& 'E:\Dev\Tools\ScheduleAssistantDotnet\dotnet.exe' test .\tests\ScheduleAssistant.Infrastructure.Tests\ScheduleAssistant.Infrastructure.Tests.csproj -c Release --no-build --no-restore`：通过，25 passed / 0 failed / 0 skipped。
+- `git diff --check`：通过。
+- WPF 进程级冒烟：通过；`ScheduleAssistant.exe` 启动后获得主窗口句柄 `2885202`，`Responding=True`，`CloseMainWindow()` 正常关闭，退出码 0，未残留 `ScheduleAssistant` 进程。当前没有可用的窗口观察通道，未宣称视觉通过。
+
+## PR、CI 与人工验收门禁
+
+- 推送与 PR：待本地审查和最小验证通过后补充；只推送整合分支。
+- PR CI：待补充；未获得人工验收前不得合并。
+- 人工验收：尚未完成。必须在真实 WPF 窗口中验证新建/编辑/保存失败保留内容、脏表单关闭、完成/取消完成、倒计时刷新和重启持久化；不可观察时不得声称视觉通过。
+
+## 未完成项与已知问题
+
+- Week、Month、AllTasks、搜索、附件、周期和 Windows 集成功能仍是明确占位。
+- 当前环境的 Git 实时远端查询因 GitHub 凭据不可用失败；本地 `origin/main` 引用与指定基线一致，推送前仍需重新确认认证和远端 SHA。
+- 最终实现提交 SHA、整合分支 HEAD、PR URL、CI 结果和人工验收结果待后续补录。
+
+## 最后提交 SHA
+
+- 最终整合提交：待提交后补录。
+- Git 元数据存在；不使用伪造 SHA。

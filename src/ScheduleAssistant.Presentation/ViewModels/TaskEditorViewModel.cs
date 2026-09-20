@@ -360,21 +360,21 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         set => SetEditorProperty(ref _notes, value ?? string.Empty);
     }
 
-    /// <summary>Gets the disabled attachment contract placeholder.</summary>
+    /// <summary>Gets whether attachment persistence is available in this task package.</summary>
     public bool IsAttachmentsEnabled => _attachmentsEnabled;
 
-    /// <summary>Explains that attachment persistence belongs to DEV-070.</summary>
+    /// <summary>Explains the honest attachment placeholder without pretending to save files.</summary>
     public string AttachmentsPlaceholder => _request.Mode == TaskEditorMode.Create
-        ? "附件将在 DEV-070 接入；当前不会伪造附件保存。"
-        : "附件将在 DEV-070 接入；当前不会伪造附件保存。";
+        ? "附件功能保留为占位；DEV-070 接入后才会保存受管副本。"
+        : "附件功能保留为占位；DEV-070 接入后才会保存受管副本。";
 
-    /// <summary>Gets the disabled recurrence contract placeholder.</summary>
+    /// <summary>Gets whether recurrence persistence is available in this task package.</summary>
     public bool IsRecurrenceEnabled => _recurrenceEnabled;
 
-    /// <summary>Explains that recurrence editing belongs to DEV-061.</summary>
+    /// <summary>Explains the honest recurrence placeholder without pretending to save rules.</summary>
     public string RecurrencePlaceholder => _request.Mode == TaskEditorMode.Create
-        ? "周期将在 DEV-061 接入；当前只保存普通任务。"
-        : "周期将在 DEV-061 接入；当前只保存普通任务。";
+        ? "周期功能保留为占位；DEV-061 接入后才会保存周期规则。"
+        : "周期功能保留为占位；DEV-061 接入后才会保存周期规则。";
 
     /// <summary>Gets the UI validation summary.</summary>
     public IReadOnlyList<string> ValidationMessages => _errors.Values.SelectMany(messages => messages).ToArray();
@@ -445,6 +445,15 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
             OnPropertyChanged(nameof(IsInitialized));
             ClearErrors();
             ValidateForm();
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            ErrorMessage = "加载已取消，请重试。";
+            NotifyCommandState();
+        }
+        catch
+        {
+            SetApplicationError(error: null);
         }
         finally
         {

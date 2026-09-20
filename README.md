@@ -2,24 +2,45 @@
 
 ScheduleAssistant is a local-first Windows desktop schedule and deadline assistant. The product and architecture baseline is [`ScheduleAssistant_V1_Development_Specification.md`](ScheduleAssistant_V1_Development_Specification.md); it is the single source of truth for all later task packages.
 
-## DEV-001 scope
+## Current implementation baseline
 
-The repository now contains the DEV-001 engineering skeleton and the DEV-040 WPF shell foundation:
+The repository contains the layered engineering baseline and the integrated DEV-041/DEV-042 core UI:
 
 - layered Domain, Application, Infrastructure, and WPF Presentation projects;
 - xUnit test projects, including dependency-direction tests;
 - centralized SDK, compiler, analyzer, and NuGet package-version settings;
-- a WPF startup window wired through a Host/DI composition root;
+- a WPF startup window wired through one Host/DI composition root;
 - ADR and task-handoff templates; and
 - a Windows GitHub Actions workflow for restore, Release build, and tests.
 
-No business behavior, database migration, schema, table, repository, notification adapter, tray integration, or visual design system is implemented in DEV-001.
+The Presentation composition root resolves one `TaskUseCases` instance as both `ITaskUseCases` and
+`ITaskQueries`, and one `InProcessEventBus` as `IApplicationEventPublisher`. SQLite initialization is
+gated once before query pages run.
 
-## Current running interface (DEV-040)
+## Current running interface (INTEGRATION-008)
 
-The WPF application starts with a single three-part shell: a fixed left navigation rail, a header with the current page title/date controls/search/new-task entry points, and the active page content region. The shell includes Today, Week, Month, Upcoming Deadlines, All Tasks, and Settings page placeholders, shared loading/empty/error/ready state presentation, and standard/compact task-card previews.
+The WPF application starts with a single three-part shell: a fixed left navigation rail, a header with
+the current page title/date controls/search/new-task entry points, and the active page content region.
+Today and Upcoming Deadlines use real SQLite-backed queries and shared loading/empty/error/ready states.
 
-DEV-040 uses temporary, explicitly labelled design data only. Search, new-task, date navigation, and task completion controls are disabled until their follow-up Application/View tasks are connected; the shell does not register a fake `ITaskUseCases`, fake repository, or write design data to SQLite. Light and alternate Dark resource dictionaries centralize color, typography, spacing, radius, border, focus, and state tokens.
+Available now:
+
+- create and edit ordinary tasks, including validation, plan times, Deadline, reminder choice, location,
+  details, materials, notes, dirty-form cancellation, optimistic-conflict reload, and explicit DST handling;
+- immutable migration `002_seed_default_categories.sql` with six idempotent default categories;
+- Today grouping for overdue, planned-past, today plans, today-only Deadlines, and completed tasks;
+- cached Deadline countdowns, range filtering (24 hours/3 days/7 days/30 days/all), task completion and
+  cancellation, and event-driven local refresh of Today and Upcoming Deadlines.
+
+Still intentionally placeholder-only:
+
+- Week and Month calendar pages;
+- All Tasks and search filtering;
+- attachment import/open/remove and recurrence editing;
+- notifications, tray, startup, desktop mode, backup, and other later Windows integration work.
+
+The placeholder pages do not query or write fake task data. Light and alternate Dark resource dictionaries
+centralize color, typography, spacing, radius, border, focus, and state tokens.
 
 ## INTEGRATION-001 state
 
@@ -63,13 +84,15 @@ dotnet build .\ScheduleAssistant.sln -c Release --no-restore
 dotnet test .\ScheduleAssistant.sln -c Release --no-build --no-restore
 ```
 
-To start the empty WPF shell on Windows:
+To start the WPF application on Windows:
 
 ```powershell
 dotnet run --project .\src\ScheduleAssistant.Presentation\ScheduleAssistant.Presentation.csproj -c Release
 ```
 
-The first implementation package deliberately does not create a data directory or SQLite database. Persistence and migration work belong to later tasks and must follow the specification and their ADRs.
+On first host startup the application creates its local SQLite data directory and applies the immutable
+migrations. The managed database contains task/category/query foundations; attachments, recurrence and
+Windows integration remain outside this integrated core UI.
 
 ## Repository layout
 

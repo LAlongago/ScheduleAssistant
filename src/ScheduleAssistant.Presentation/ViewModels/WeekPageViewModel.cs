@@ -11,8 +11,8 @@ public sealed class WeekPageViewModel : PageViewModelBase
             "周计划",
             "周一至周日的七列计划视图",
             PageContentState.Empty,
-            "周计划尚未接入",
-            "日期聚合和周历卡片将在 DEV-050 接入；当前没有查询或写入操作。")
+            "周计划功能保留为占位",
+            "日期聚合和周历卡片将在 DEV-050 接入；当前不会查询或写入数据。")
     {
     }
 }

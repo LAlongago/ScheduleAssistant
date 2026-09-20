@@ -49,6 +49,16 @@ public sealed partial class TaskEditorViewModel
             _closeApproved = true;
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
+        catch (OperationCanceledException)
+        {
+            ErrorMessage = "保存已取消，请重试。";
+            NotifyCommandState();
+        }
+        catch
+        {
+            ErrorMessage = "任务未能保存。请检查连接后重试。";
+            NotifyCommandState();
+        }
         finally
         {
             SetBusy(false);
@@ -80,6 +90,16 @@ public sealed partial class TaskEditorViewModel
             ErrorMessage = null;
             OnPropertyChanged(nameof(IsDirty));
             OnPropertyChanged(nameof(HasConflict));
+            NotifyCommandState();
+        }
+        catch (OperationCanceledException)
+        {
+            ErrorMessage = "重新加载已取消，请重试。";
+            NotifyCommandState();
+        }
+        catch
+        {
+            ErrorMessage = "无法重新加载任务，请重试。";
             NotifyCommandState();
         }
         finally

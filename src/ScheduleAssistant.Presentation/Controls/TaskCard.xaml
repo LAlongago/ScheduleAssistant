@@ -2,7 +2,8 @@
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="clr-namespace:ScheduleAssistant.Presentation.ViewModels">
+             xmlns:vm="clr-namespace:ScheduleAssistant.Presentation.ViewModels"
+             xmlns:controls="clr-namespace:ScheduleAssistant.Presentation.Controls">
     <Border Style="{StaticResource CardBorder}">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -13,6 +14,9 @@
                     Grid.Column="0"
                     CornerRadius="{DynamicResource Radius.AccentBar}"
                     Style="{DynamicResource TypeAccentStyle}" />
+            <Border Grid.Column="0"
+                    CornerRadius="{DynamicResource Radius.AccentBar}"
+                    Background="{Binding CategoryColorHex, Converter={StaticResource CategoryColorConverter}}" />
 
             <Grid Grid.Column="1" Margin="{DynamicResource Spacing.Card}">
                 <Grid x:Name="StandardLayout">
@@ -31,6 +35,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -43,6 +48,7 @@
                               IsChecked="{Binding IsCompleted, Mode=OneWay}"
                               IsEnabled="{Binding IsCompletionEnabled}"
                               Command="{Binding CompletionCommand}"
+                              CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
                               Style="{StaticResource CompletionCheckBox}" />
                     <StackPanel Grid.Row="0" Grid.Column="1">
                         <TextBlock Style="{StaticResource Text.CardTitle}" Text="{Binding Title}" />
@@ -63,6 +69,12 @@
                                Margin="0,14,0,0">
                         <TextBlock Margin="0,0,18,0"
                                    Style="{StaticResource Text.Body}"
+                                   Text="{Binding PlanMarkerText}" />
+                        <TextBlock Margin="0,0,18,0"
+                                   Style="{StaticResource Text.Body}"
+                                   Text="{Binding DeadlineMarkerText}" />
+                        <TextBlock Margin="0,0,18,0"
+                                   Style="{StaticResource Text.Body}"
                                    Text="{Binding PlannedTimeText}" />
                         <TextBlock Style="{StaticResource Text.Body}"
                                    Text="{Binding DeadlineText}" />
@@ -78,6 +90,13 @@
                         <TextBlock Style="{StaticResource Text.Caption}"
                                    Text="{Binding StatusText}" />
                     </WrapPanel>
+                    <TextBlock Grid.Row="3"
+                               Grid.Column="1"
+                               Grid.ColumnSpan="2"
+                               Margin="0,8,0,0"
+                               Foreground="{DynamicResource Brush.Danger}"
+                               Style="{StaticResource Text.Caption}"
+                               Text="{Binding ErrorText}" />
                 </Grid>
 
                 <Grid x:Name="CompactLayout">
@@ -114,6 +133,7 @@
         </Grid>
     </Border>
     <UserControl.Resources>
+        <controls:CategoryColorConverter x:Key="CategoryColorConverter" />
         <Style x:Key="TypeAccentStyle" TargetType="{x:Type Border}">
             <Setter Property="Background" Value="{DynamicResource Brush.CategoryOther}" />
             <Style.Triggers>

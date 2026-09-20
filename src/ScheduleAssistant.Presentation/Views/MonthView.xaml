@@ -11,27 +11,7 @@
                        Text="{Binding Description}" />
             <controls:PageStatePresenter State="{Binding ContentState}"
                                          StatusTitle="{Binding StatusTitle}"
-                                         StatusMessage="{Binding StatusMessage}">
-                <controls:PageStatePresenter.NormalContent>
-                    <StackPanel>
-                        <TextBlock Margin="{DynamicResource Spacing.Section}"
-                                   Style="{StaticResource Text.SectionTitle}"
-                                   Text="紧凑卡片模式" />
-                        <ItemsControl ItemsSource="{Binding CompactTasks}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <controls:TaskCard Width="240" Margin="0,0,12,12" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </controls:PageStatePresenter.NormalContent>
-            </controls:PageStatePresenter>
+                                         StatusMessage="{Binding StatusMessage}" />
         </StackPanel>
     </ScrollViewer>
 </UserControl>
