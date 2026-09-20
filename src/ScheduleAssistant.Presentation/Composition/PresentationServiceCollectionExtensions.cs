@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using System.Windows.Threading;
 using ScheduleAssistant.Application.Abstractions.Events;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Infrastructure.Persistence;
@@ -28,6 +29,9 @@ public static class PresentationServiceCollectionExtensions
         services.AddSingleton<ITaskQueries>(serviceProvider =>
             serviceProvider.GetRequiredService<TaskUseCases>());
         services.AddSingleton<IDatabaseInitialization, DatabaseInitialization>();
+        services.AddSingleton<IUiDispatcher>(_ => new WpfUiDispatcher(Dispatcher.CurrentDispatcher));
+        services.AddTransient<IDeadlineRefreshTimer, DeadlineRefreshTimer>();
+        services.AddSingleton<ITaskCardMapper, TaskCardMapper>();
         services.AddSingleton<TodayPageViewModel>();
         services.AddSingleton<WeekPageViewModel>();
         services.AddSingleton<MonthPageViewModel>();
