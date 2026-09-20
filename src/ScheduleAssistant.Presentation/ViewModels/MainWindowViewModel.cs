@@ -11,6 +11,7 @@ namespace ScheduleAssistant.Presentation.ViewModels;
 public sealed class MainWindowViewModel : ObservableObject
 {
     private readonly INavigationService _navigationService;
+    private readonly ITaskEditorService? _taskEditorService;
     private readonly bool _isDateNavigationEnabled;
     private readonly bool _isSearchEnabled;
     private readonly bool _isCreateTaskEnabled;
@@ -21,27 +22,37 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _searchText = string.Empty;
 
     /// <summary>
-    /// Initializes the shell ViewModel with the presentation navigation service and clock abstraction.
+    /// Initializes the shell ViewModel with navigation, clock, and the reusable task-editor entry point.
     /// </summary>
-    public MainWindowViewModel(INavigationService navigationService, TimeProvider timeProvider)
+    public MainWindowViewModel(
+        INavigationService navigationService,
+        TimeProvider timeProvider,
+        ITaskEditorService? taskEditorService = null)
     {
         ArgumentNullException.ThrowIfNull(navigationService);
         ArgumentNullException.ThrowIfNull(timeProvider);
 
         _navigationService = navigationService;
+        _taskEditorService = taskEditorService;
         _isDateNavigationEnabled = false;
         _isSearchEnabled = false;
-        _isCreateTaskEnabled = false;
+        _isCreateTaskEnabled = taskEditorService is not null;
         _dateNavigationHint = "日期导航将在后续日历视图任务中接入";
         _searchHint = "搜索将在后续任务查询视图中接入";
-        _createTaskHint = "新建任务将在 DEV-041 接入";
-        _shellNotice = "DEV-040 设计预览 · 当前数据为临时展示内容，不会写入数据库";
+        _createTaskHint = taskEditorService is null
+            ? "新建任务编辑器尚未连接"
+            : "打开普通任务编辑器";
+        _shellNotice = taskEditorService is null
+            ? "DEV-040 设计预览 · 当前数据为临时展示内容，不会写入数据库"
+            : "DEV-041 任务编辑器已连接 · 页面查询将由后续任务接入";
         DisplayDate = DateOnly.FromDateTime(timeProvider.GetLocalNow().DateTime);
         NavigateCommand = new RelayCommand<NavigationPage>(Navigate);
         PreviousDateCommand = new RelayCommand(DisabledDateAction, () => false);
         CurrentDateCommand = new RelayCommand(DisabledDateAction, () => false);
         NextDateCommand = new RelayCommand(DisabledDateAction, () => false);
-        CreateTaskCommand = new RelayCommand(DisabledDateAction, () => false);
+        CreateTaskCommand = taskEditorService is null
+            ? new AsyncRelayCommand(DisabledCreateActionAsync, () => false)
+            : new AsyncRelayCommand(CreateTaskAsync);
 
         _navigationService.PropertyChanged += OnNavigationPropertyChanged;
     }
@@ -104,14 +115,26 @@ public sealed class MainWindowViewModel : ObservableObject
     /// <summary>Gets the disabled next-date command placeholder.</summary>
     public IRelayCommand NextDateCommand { get; }
 
-    /// <summary>Gets the disabled new-task command placeholder.</summary>
-    public IRelayCommand CreateTaskCommand { get; }
+    /// <summary>Gets the new-task command bound to the reusable task-editor service.</summary>
+    public IAsyncRelayCommand CreateTaskCommand { get; }
 
     private void Navigate(NavigationPage page) => _navigationService.Navigate(page);
 
     private static void DisabledDateAction()
     {
         // Deliberately empty: CanExecute is false until a date query is connected.
+    }
+
+    private static Task DisabledCreateActionAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    private Task CreateTaskAsync()
+    {
+        return _taskEditorService is null
+            ? Task.CompletedTask
+            : _taskEditorService.OpenCreateAsync(DisplayDate);
     }
 
     private void OnNavigationPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
