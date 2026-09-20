@@ -402,6 +402,7 @@
         <Style.Triggers>
             <Trigger Property="IsExpanded" Value="True">
                 <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="MinHeight" Value="370" />
             </Trigger>
         </Style.Triggers>
     </Style>

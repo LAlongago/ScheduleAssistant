@@ -136,11 +136,14 @@ public sealed class CompositionRegistrationTests
                 Assert.False(contentSection.IsExpanded);
                 Assert.Equal(VerticalAlignment.Stretch, deadlineSection.VerticalAlignment);
                 Assert.Equal(VerticalAlignment.Top, contentSection.VerticalAlignment);
+                Assert.Equal(370, deadlineSection.MinHeight);
+                Assert.Equal(0, contentSection.MinHeight);
                 var contentHeaderToggle = Assert.IsType<ToggleButton>(
                     contentSection.Template.FindName("HeaderToggle", contentSection));
                 contentHeaderToggle.IsChecked = true;
                 Assert.True(contentSection.IsExpanded);
                 Assert.True(deadlineSection.IsExpanded);
+                Assert.Equal(370, contentSection.MinHeight);
                 editorWindow.UpdateLayout();
                 Assert.Equal(VerticalAlignment.Stretch, deadlineSection.VerticalAlignment);
                 Assert.Equal(VerticalAlignment.Stretch, contentSection.VerticalAlignment);
@@ -150,6 +153,8 @@ public sealed class CompositionRegistrationTests
                 Assert.False(contentSection.IsExpanded);
                 Assert.Equal(VerticalAlignment.Stretch, deadlineSection.VerticalAlignment);
                 Assert.Equal(VerticalAlignment.Top, contentSection.VerticalAlignment);
+                Assert.Equal(370, deadlineSection.MinHeight);
+                Assert.Equal(0, contentSection.MinHeight);
                 deadlineHeaderToggle.IsChecked = false;
 
                 var hourTens = Assert.IsType<ComboBox>(plannedStartPicker.FindName("HourTensSelector"));

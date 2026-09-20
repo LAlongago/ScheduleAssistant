@@ -17,7 +17,7 @@ The Presentation composition root resolves one `TaskUseCases` instance as both `
 `ITaskQueries`, and one `InProcessEventBus` as `IApplicationEventPublisher`. SQLite initialization is
 gated once before query pages run.
 
-## Current running interface (INTEGRATION-008 + DEV-043 + DEV-044 + DEV-045 + DEV-046)
+## Current running interface (INTEGRATION-008 + DEV-043 + DEV-044 + DEV-045 + DEV-046 + DEV-047)
 
 The WPF application starts with a single three-part shell: a fixed left navigation rail, a header with
 the current page title/date controls/search/new-task entry points, and the active page content region.
@@ -30,7 +30,7 @@ Available now:
 - a simplified-Chinese Windows font stack led by Microsoft YaHei UI, flat selection controls, four-digit
   time pickers, equal-width editor sections, and collapsed optional Deadline/content sections with independent
   expansion; when both are open their cards share the same height, while a single open card does not stretch
-  its collapsed neighbor. Validation feedback appears only after an invalid save attempt, and discard confirmation
+  its collapsed neighbor and the expanded height remains stable when the other section opens. Validation feedback appears only after an invalid save attempt, and discard confirmation
   follows the application theme without local-timezone or optional-expansion hint text. Editor scrolling stays
   available without a visible scrollbar changing the two-column layout width;
 - immutable migration `002_seed_default_categories.sql` with six idempotent default categories;
