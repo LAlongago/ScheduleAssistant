@@ -34,12 +34,14 @@
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <Border Margin="0,0,0,12"
+                <Border x:Name="FormPrompt"
+                        Margin="0,0,0,12"
                         Background="{DynamicResource Brush.SurfaceSubtle}"
                         BorderBrush="{DynamicResource Brush.Border}"
                         BorderThickness="{DynamicResource BorderThickness.Subtle}"
                         CornerRadius="{DynamicResource Radius.Card}"
-                        Padding="{DynamicResource Spacing.Card}">
+                        Padding="{DynamicResource Spacing.Card}"
+                        Visibility="{Binding IsFormPromptVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Style="{StaticResource Text.SectionTitle}" Text="表单提示" />
                         <TextBlock Margin="0,4,0,0"
@@ -154,14 +156,10 @@
                               Grid.Column="0"
                               AutomationProperties.Name="截止与提醒可选区域"
                               IsExpanded="False"
+                              VerticalAlignment="Top"
                               Style="{StaticResource Expander.Card}">
                         <Expander.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Style="{StaticResource Text.SectionTitle}" Text="截止与提醒" />
-                                <Border Margin="8,0,0,0" Style="{StaticResource PillBorder}">
-                                    <TextBlock Style="{StaticResource Text.Caption}" Text="可选 · 点击展开" />
-                                </Border>
-                            </StackPanel>
+                            <TextBlock Style="{StaticResource Text.SectionTitle}" Text="截止与提醒" />
                         </Expander.Header>
                         <StackPanel>
                             <CheckBox AutomationProperties.Name="启用 Deadline"
@@ -186,9 +184,6 @@
                                                             AutomationProperties.Name="Deadline 时间"
                                                             TimeText="{Binding DeadlineTimeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}" />
                             </Grid>
-                            <TextBlock Margin="0,10,0,4" Style="{StaticResource Text.Caption}" Text="本机 Windows 时区" />
-                            <TextBlock FontWeight="{DynamicResource FontWeight.SemiBold}" Text="{Binding TimeZoneDisplayName}" />
-                            <TextBlock Margin="0,2,0,0" Style="{StaticResource Text.Caption}" Text="{Binding TimeZoneId}" />
                             <CheckBox Margin="0,14,0,0"
                                       AutomationProperties.Name="启用提醒"
                                       Content="启用截止提醒"
@@ -200,7 +195,7 @@
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock VerticalAlignment="Center" Style="{StaticResource Text.Caption}" Text="提醒偏移" />
+                                <TextBlock VerticalAlignment="Center" Style="{StaticResource Text.Caption}" Text="提醒时间" />
                                 <ComboBox Grid.Column="1"
                                           Margin="12,0,0,0"
                                           DisplayMemberPath="Label"
@@ -217,14 +212,10 @@
                               Grid.Column="2"
                               AutomationProperties.Name="任务内容可选区域"
                               IsExpanded="False"
+                              VerticalAlignment="Top"
                               Style="{StaticResource Expander.Card}">
                         <Expander.Header>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Style="{StaticResource Text.SectionTitle}" Text="内容" />
-                                <Border Margin="8,0,0,0" Style="{StaticResource PillBorder}">
-                                    <TextBlock Style="{StaticResource Text.Caption}" Text="可选 · 点击展开" />
-                                </Border>
-                            </StackPanel>
+                            <TextBlock Style="{StaticResource Text.SectionTitle}" Text="内容" />
                         </Expander.Header>
                         <StackPanel>
                             <TextBlock Style="{StaticResource Text.Caption}" Text="具体事务" />

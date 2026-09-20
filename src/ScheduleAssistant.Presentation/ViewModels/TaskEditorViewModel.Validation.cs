@@ -9,12 +9,25 @@ public sealed partial class TaskEditorViewModel
 {
     private async Task SaveAsync()
     {
-        ValidateForm();
-        if (!CanSave || !TryBuildDraft(out var draft))
+        if (!CanSave)
         {
             return;
         }
 
+        ValidateForm();
+        if (HasErrors)
+        {
+            ShowValidationErrors = true;
+            return;
+        }
+
+        if (!TryBuildDraft(out var draft))
+        {
+            ShowValidationErrors = true;
+            return;
+        }
+
+        ShowValidationErrors = false;
         ErrorMessage = null;
         WarningMessage = null;
         _hasConflict = false;
@@ -290,7 +303,7 @@ public sealed partial class TaskEditorViewModel
 
         if (!ReminderOffsetOptions.Any(option => option.Value == ReminderOffsetMinutes))
         {
-            AddError(errors, nameof(ReminderOffsetMinutes), "请选择有效的提醒偏移。");
+            AddError(errors, nameof(ReminderOffsetMinutes), "请选择有效的提醒时间。");
         }
 
         var plannedStart = ParseTime(PlannedStartText, nameof(PlannedStartText), errors);

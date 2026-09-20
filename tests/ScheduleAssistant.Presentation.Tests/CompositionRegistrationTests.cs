@@ -88,11 +88,13 @@ public sealed class CompositionRegistrationTests
                 var editorWindow = provider
                     .GetRequiredService<ITaskEditorWindowFactory>()
                     .Create(editorViewModel);
+                var formPrompt = Assert.IsType<Border>(editorWindow.FindName("FormPrompt"));
                 editorWindow.ShowActivated = false;
                 editorWindow.Opacity = 0;
                 editorWindow.Left = -10_000;
                 editorWindow.Top = -10_000;
                 editorWindow.Show();
+                Assert.Equal(Visibility.Collapsed, formPrompt.Visibility);
                 var categoryComboBox = Assert.IsType<ComboBox>(editorWindow.FindName("CategoryComboBox"));
                 var categorySelectionPresenter = Assert.IsType<ContentPresenter>(
                     categoryComboBox.Template.FindName("SelectionContentPresenter", categoryComboBox));
@@ -123,14 +125,19 @@ public sealed class CompositionRegistrationTests
                 var contentSection = Assert.IsType<Expander>(editorWindow.FindName("ContentSection"));
                 Assert.False(deadlineSection.IsExpanded);
                 Assert.False(contentSection.IsExpanded);
+                Assert.Equal(VerticalAlignment.Top, deadlineSection.VerticalAlignment);
+                Assert.Equal(VerticalAlignment.Top, contentSection.VerticalAlignment);
                 var deadlineHeaderToggle = Assert.IsType<ToggleButton>(
                     deadlineSection.Template.FindName("HeaderToggle", deadlineSection));
                 deadlineHeaderToggle.IsChecked = true;
                 Assert.True(deadlineSection.IsExpanded);
+                Assert.False(contentSection.IsExpanded);
+                deadlineHeaderToggle.IsChecked = false;
                 var contentHeaderToggle = Assert.IsType<ToggleButton>(
                     contentSection.Template.FindName("HeaderToggle", contentSection));
                 contentHeaderToggle.IsChecked = true;
                 Assert.True(contentSection.IsExpanded);
+                Assert.False(deadlineSection.IsExpanded);
 
                 var hourTens = Assert.IsType<ComboBox>(plannedStartPicker.FindName("HourTensSelector"));
                 var hourOnes = Assert.IsType<ComboBox>(plannedStartPicker.FindName("HourOnesSelector"));

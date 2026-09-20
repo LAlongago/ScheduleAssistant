@@ -70,6 +70,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     private bool _isDirty;
     private bool _hasConflict;
     private bool _closeApproved;
+    private bool _showValidationErrors;
     private bool _deadlineWarningAcknowledged;
     private bool _reminderPlanTouched;
     private readonly bool _attachmentsEnabled;
@@ -165,11 +166,34 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     /// <summary>Gets whether the form has changes that are not yet committed.</summary>
     public bool IsDirty => _isDirty;
 
+    /// <summary>Gets whether validation feedback should be shown after an invalid save attempt.</summary>
+    public bool ShowValidationErrors
+    {
+        get => _showValidationErrors;
+        private set
+        {
+            if (_showValidationErrors == value)
+            {
+                return;
+            }
+
+            _showValidationErrors = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsFormPromptVisible));
+        }
+    }
+
+    /// <summary>Gets whether the validation summary should occupy space in the editor.</summary>
+    public bool IsFormPromptVisible =>
+        (ShowValidationErrors && HasErrors)
+        || !string.IsNullOrWhiteSpace(ErrorMessage)
+        || !string.IsNullOrWhiteSpace(WarningMessage);
+
     /// <summary>Gets whether an optimistic concurrency conflict needs a reload.</summary>
     public bool HasConflict => _hasConflict;
 
     /// <summary>Gets whether the save command can execute.</summary>
-    public bool CanSave => IsInitialized && !IsBusy && !HasErrors;
+    public bool CanSave => IsInitialized && !IsBusy && !HasConflict;
 
     /// <summary>Gets whether the reload command can execute.</summary>
     public bool CanReload => IsEditMode && IsInitialized && !IsBusy && HasConflict;
@@ -178,14 +202,26 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     public string? ErrorMessage
     {
         get => _errorMessage;
-        private set => SetProperty(ref _errorMessage, value);
+        private set
+        {
+            if (SetProperty(ref _errorMessage, value))
+            {
+                OnPropertyChanged(nameof(IsFormPromptVisible));
+            }
+        }
     }
 
     /// <summary>Gets a non-blocking warning returned with a successful save.</summary>
     public string? WarningMessage
     {
         get => _warningMessage;
-        private set => SetProperty(ref _warningMessage, value);
+        private set
+        {
+            if (SetProperty(ref _warningMessage, value))
+            {
+                OnPropertyChanged(nameof(IsFormPromptVisible));
+            }
+        }
     }
 
     /// <summary>Gets the Application post-commit event status from the last save.</summary>
@@ -639,6 +675,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
 
         OnPropertyChanged(nameof(HasErrors));
         OnPropertyChanged(nameof(ValidationMessages));
+        OnPropertyChanged(nameof(IsFormPromptVisible));
     }
 
     private void ReplaceErrors(IReadOnlyDictionary<string, IReadOnlyList<string>> next)
@@ -657,6 +694,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
 
         OnPropertyChanged(nameof(HasErrors));
         OnPropertyChanged(nameof(ValidationMessages));
+        OnPropertyChanged(nameof(IsFormPromptVisible));
         NotifyCommandState();
     }
 

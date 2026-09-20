@@ -32,12 +32,16 @@ public sealed class WpfTaskEditorInteractionService : ITaskEditorInteractionServ
     /// <inheritdoc />
     public bool ConfirmDiscardChanges()
     {
-        var result = MessageBox.Show(
-            "当前编辑器有未保存修改。确定放弃这些修改吗？",
-            "放弃修改",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning,
-            MessageBoxResult.No);
-        return result == MessageBoxResult.Yes;
+        var owner = System.Windows.Application.Current?.Windows
+            .OfType<Window>()
+            .FirstOrDefault(window => window.IsActive)
+            ?? System.Windows.Application.Current?.MainWindow;
+        var dialog = new ConfirmDiscardChangesWindow();
+        if (owner is not null)
+        {
+            dialog.Owner = owner;
+        }
+
+        return dialog.ShowDialog() == true;
     }
 }

@@ -24,17 +24,21 @@ public sealed class TaskEditorViewModelTests
     ];
 
     [Fact]
-    public async Task InitializeAndEdit_WhenTitleIsBlank_ShouldExposeValidationAndNotCallCreate()
+    public async Task Initialize_WhenTitleIsBlank_ShouldHideValidationUntilSaveAttempt()
     {
         var fixture = await CreateFixtureAsync();
         fixture.ViewModel.Title = " ";
 
         Assert.True(fixture.ViewModel.HasErrors);
         Assert.Contains("请输入标题。", fixture.ViewModel.ValidationMessages);
-        Assert.False(fixture.ViewModel.SaveCommand.CanExecute(null));
+        Assert.False(fixture.ViewModel.ShowValidationErrors);
+        Assert.False(fixture.ViewModel.IsFormPromptVisible);
+        Assert.True(fixture.ViewModel.SaveCommand.CanExecute(null));
 
         await fixture.ViewModel.SaveCommand.ExecuteAsync(null);
 
+        Assert.True(fixture.ViewModel.ShowValidationErrors);
+        Assert.True(fixture.ViewModel.IsFormPromptVisible);
         Assert.Empty(fixture.UseCases.CreatedCommands);
     }
 
@@ -47,10 +51,11 @@ public sealed class TaskEditorViewModelTests
         fixture.ViewModel.DeadlineDateValue = new DateTime(2026, 9, 21);
 
         Assert.Contains("请选择 Deadline 时间。", fixture.ViewModel.ValidationMessages);
-        Assert.False(fixture.ViewModel.SaveCommand.CanExecute(null));
+        Assert.True(fixture.ViewModel.SaveCommand.CanExecute(null));
 
         await fixture.ViewModel.SaveCommand.ExecuteAsync(null);
 
+        Assert.True(fixture.ViewModel.ShowValidationErrors);
         Assert.Empty(fixture.UseCases.CreatedCommands);
     }
 

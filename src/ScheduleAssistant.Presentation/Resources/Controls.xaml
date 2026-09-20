@@ -1,5 +1,17 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <BooleanToVisibilityConverter x:Key="ValidationVisibilityConverter" />
+    <ControlTemplate x:Key="ConditionalValidationErrorTemplate">
+        <Border BorderBrush="{DynamicResource Brush.Danger}"
+                BorderThickness="{DynamicResource BorderThickness.Focus}"
+                CornerRadius="{DynamicResource Radius.Control}"
+                Visibility="{Binding ElementName=ValidationPlaceholder,
+                                     Path=AdornedElement.DataContext.ShowValidationErrors,
+                                     Converter={StaticResource ValidationVisibilityConverter}}">
+            <AdornedElementPlaceholder x:Name="ValidationPlaceholder" />
+        </Border>
+    </ControlTemplate>
+
     <Style x:Key="FocusVisualStyle" TargetType="{x:Type Control}">
         <Setter Property="Template">
             <Setter.Value>
@@ -108,6 +120,12 @@
         <Setter Property="Foreground" Value="{DynamicResource Brush.TextOnAccent}" />
     </Style>
 
+    <Style x:Key="Button.Danger" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonBase}">
+        <Setter Property="Background" Value="{DynamicResource Brush.Danger}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Danger}" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TextOnAccent}" />
+    </Style>
+
     <Style x:Key="Button.Secondary" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonBase}" />
 
     <Style x:Key="Button.Quiet" TargetType="{x:Type Button}" BasedOn="{StaticResource ButtonBase}">
@@ -176,6 +194,7 @@
         <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}" />
         <Setter Property="Padding" Value="{DynamicResource Spacing.Button}" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisualStyle}" />
+        <Setter Property="Validation.ErrorTemplate" Value="{DynamicResource ConditionalValidationErrorTemplate}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
