@@ -41,15 +41,16 @@
 
 ## PR、CI 与人工验收门禁
 
-- 推送与 PR：待本地审查和最小验证通过后补充；只推送整合分支。
-- PR CI：待补充；未获得人工验收前不得合并。
+- 推送与 PR：已推送整合分支并创建 [PR #12](https://github.com/LAlongago/ScheduleAssistant/pull/12)，只推送了 `integration/dev-041-dev-042-core-ui`。
+- PR CI：首次运行失败，失败步骤为 `ScheduleAssistant.Architecture.Tests.DependencyDirectionTests.Presentation_ShouldDependOnApplicationAndInfrastructure`；[Actions run 35496602126](https://github.com/LAlongago/ScheduleAssistant/actions/runs/35496602126)。Application、Domain、Infrastructure、Presentation 和新增 Presentation 测试均已通过，失败只发生在架构依赖断言。
 - 人工验收：尚未完成。必须在真实 WPF 窗口中验证新建/编辑/保存失败保留内容、脏表单关闭、完成/取消完成、倒计时刷新和重启持久化；不可观察时不得声称视觉通过。
 
 ## 未完成项与已知问题
 
 - Week、Month、AllTasks、搜索、附件、周期和 Windows 集成功能仍是明确占位。
-- 当前环境的 Git 实时远端查询因 GitHub 凭据不可用失败；本地 `origin/main` 引用与指定基线一致，推送前仍需重新确认认证和远端 SHA。
-- 最终实现提交 SHA、整合分支 HEAD、PR URL、CI 结果和人工验收结果待后续补录。
+- Git 直接实时查询最初因 Git Credential Manager 无凭据失败；随后确认 GitHub CLI 已登录并配置 Git 凭据，推送前后均核对 `origin/main` 为指定基线。
+- CI 阻断：现有 Application DTO 公共字段使用 Domain 枚举，Presentation 因消费这些字段产生 Domain 程序集引用；Presentation 项目文件仍只直接引用 Application/Infrastructure。移除该程序集边缘需要修改 Application 公共契约或增加不诚实的重复/反射适配；本任务未进行，也未放宽架构测试约束。需由用户确认后续架构方向。
+- 人工验收和最终合并后的 main CI 尚未执行。
 
 ## 最后提交 SHA
 
