@@ -87,8 +87,9 @@ public sealed partial class TaskUseCases
             displayDate,
             task.PlannedDate == displayDate,
             task.Deadline?.LocalDate == displayDate,
-            DisplayStatusCalculator.Calculate(task, snapshot.NowUtc, snapshot.TodayLocal),
-            DeadlineUrgencyCalculator.Calculate(task, snapshot.NowUtc));
+            TaskContractMapper.ToCode(
+                DisplayStatusCalculator.Calculate(task, snapshot.NowUtc, snapshot.TodayLocal)),
+            TaskContractMapper.ToCode(DeadlineUrgencyCalculator.Calculate(task, snapshot.NowUtc)));
     }
 
     private static IEnumerable<CalendarEntry> SortEntries(
@@ -126,13 +127,13 @@ public sealed partial class TaskUseCases
 
     private static int MonthPriority(CalendarEntry entry, QueryTimeSnapshot snapshot)
     {
-        if (entry.DisplayStatus == DisplayStatus.Overdue
+        if (entry.DisplayStatus == DisplayStatusCode.Overdue
             || entry.IsDeadlineOnDate && entry.DisplayDate == snapshot.TodayLocal)
         {
             return 0;
         }
 
-        if (entry.Task.Priority >= TaskPriority.Important)
+        if (entry.Task.Priority >= TaskPriorityCode.Important)
         {
             return 1;
         }
@@ -142,12 +143,12 @@ public sealed partial class TaskUseCases
 
     private static int TodayPriority(CalendarEntry entry)
     {
-        if (entry.DisplayStatus == DisplayStatus.Overdue)
+        if (entry.DisplayStatus == DisplayStatusCode.Overdue)
         {
             return 0;
         }
 
-        if (entry.DisplayStatus == DisplayStatus.PlannedPast)
+        if (entry.DisplayStatus == DisplayStatusCode.PlannedPast)
         {
             return 1;
         }

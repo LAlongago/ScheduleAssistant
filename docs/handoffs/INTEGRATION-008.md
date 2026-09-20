@@ -62,14 +62,22 @@
 
 - Week、Month、AllTasks、搜索、附件、周期和 Windows 集成功能仍是明确占位。
 - Git 直接实时查询最初因 Git Credential Manager 无凭据失败；随后确认 GitHub CLI 已登录并配置 Git 凭据，推送前后均核对 `origin/main` 为指定基线。
-- CI 阻断：现有 Application DTO 公共字段使用 Domain 枚举，Presentation 因消费这些字段产生 Domain 程序集引用；Presentation 项目文件仍只直接引用 Application/Infrastructure。移除该程序集边缘需要修改 Application 公共契约或增加不诚实的重复/反射适配；本任务未进行，也未放宽架构测试约束。需由用户确认后续架构方向。
+- 原有 Presentation→Domain 程序集引用阻断已由 DEV-048 解决：Application 契约现在使用自有代码类型，Domain 枚举只在 Application 集中映射边界转换；架构测试恢复通过，未放宽架构规则。
 - 需要人工复测：新建合法任务保存后卡片应正常渲染；重启加载已有任务不应空白或闪退。
 - 人工验收和最终合并后的 main CI 尚未执行。
+
+## DEV-048 Presentation–Domain 架构边界修复
+
+- Application 新增 `TaskPriorityCode`、`WorkflowStatusCode`、`DisplayStatusCode` 与 `DeadlineUrgencyCode`，并由 `TaskContractMapper` 集中负责与 Domain 枚举的双向映射；保留原有枚举值语义和编码。
+- `TaskDraft`、`TaskDto`、`CalendarEntry`、搜索条件及 Deadline 解析结果均不再向 Presentation 暴露 Domain 类型；创建、编辑、查询和日历结果分别在 Application 边界完成转换。
+- `TaskEditorViewModel`、`TaskCardViewModel`、`TaskCardMapper`、`TodayPageViewModel` 与 `DeadlineCountdownViewModel` 移除 Domain 引用；Presentation 程序集只保留 Application 与 Infrastructure 生产依赖。
+- 新增 Application 映射双向覆盖测试；未修改 Infrastructure 仓储、Domain 模型、数据库编码或 migration。
+- DEV-048 的 Release build、Architecture.Tests、Application.Tests、Presentation.Tests 与 `git diff --check` 均已在集成 worktree 通过；PR #12 的 DEV-048 CI 仍待推送后执行。
 
 ## 最后提交 SHA
 
 - 核心整合合并提交：`3be052408d02eac50f95074807348f9a579f168d`。
 - 任务卡闪退修复提交：`76f1c21`。
 - DEV-047 累计版本前移至：`b65da8b`；整合记录提交为 `bedf314767519c0e25b6b32ed25a02bfe45ab23f`，CI 结果记录提交为 `6a39cd4`，均已推送。
-- PR CI、人工验收和合并后的文档更新提交将在同一 handoff 继续补录。
+- DEV-048 提交、PR CI、人工验收和合并后的文档更新提交将在对应 handoff 继续补录。
 - Git 元数据存在；不使用伪造 SHA。

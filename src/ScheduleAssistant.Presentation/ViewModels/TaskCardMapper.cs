@@ -1,6 +1,5 @@
 using ScheduleAssistant.Application.Calendar;
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 using ScheduleAssistant.Presentation.Composition;
 
 namespace ScheduleAssistant.Presentation.ViewModels;
@@ -95,41 +94,41 @@ public sealed class TaskCardMapper : ITaskCardMapper
 
     private static string FormatDate(DateOnly date) => $"{date.Year}年{date.Month}月{date.Day}日";
 
-    private static string FormatPriority(TaskPriority priority)
+    private static string FormatPriority(TaskPriorityCode priority)
     {
         return priority switch
         {
-            TaskPriority.Low => "低优先级",
-            TaskPriority.Normal => "一般",
-            TaskPriority.Important => "重要",
-            TaskPriority.UrgentAndImportant => "紧急且重要",
+            TaskPriorityCode.Low => "低优先级",
+            TaskPriorityCode.Normal => "一般",
+            TaskPriorityCode.Important => "重要",
+            TaskPriorityCode.UrgentAndImportant => "紧急且重要",
             _ => "未指定优先级"
         };
     }
 
-    private static string FormatDisplayStatus(DisplayStatus status)
+    private static string FormatDisplayStatus(DisplayStatusCode status)
     {
         return status switch
         {
-            DisplayStatus.Completed => "已完成",
-            DisplayStatus.Overdue => "已逾期",
-            DisplayStatus.InProgress => "进行中",
-            DisplayStatus.PlannedPast => "计划已过",
-            DisplayStatus.NotStarted => "未开始",
+            DisplayStatusCode.Completed => "已完成",
+            DisplayStatusCode.Overdue => "已逾期",
+            DisplayStatusCode.InProgress => "进行中",
+            DisplayStatusCode.PlannedPast => "计划已过",
+            DisplayStatusCode.NotStarted => "未开始",
             _ => "状态未知"
         };
     }
 
-    private static string FormatUrgency(DeadlineUrgencyLevel urgency)
+    private static string FormatUrgency(DeadlineUrgencyCode urgency)
     {
         return urgency switch
         {
-            DeadlineUrgencyLevel.None => string.Empty,
-            DeadlineUrgencyLevel.Neutral => "从容",
-            DeadlineUrgencyLevel.MoreThanThreeDays => "3 天以上",
-            DeadlineUrgencyLevel.OneToThreeDays => "1–3 天",
-            DeadlineUrgencyLevel.LessThanOneDay => "24 小时内",
-            DeadlineUrgencyLevel.Overdue => "已逾期",
+            DeadlineUrgencyCode.None => string.Empty,
+            DeadlineUrgencyCode.Neutral => "从容",
+            DeadlineUrgencyCode.MoreThanThreeDays => "3 天以上",
+            DeadlineUrgencyCode.OneToThreeDays => "1–3 天",
+            DeadlineUrgencyCode.LessThanOneDay => "24 小时内",
+            DeadlineUrgencyCode.Overdue => "已逾期",
             _ => ""
         };
     }
@@ -150,8 +149,8 @@ public sealed record TaskCardPresentation(
     string UrgencyText,
     bool IsPlannedOnDate,
     bool IsDeadlineOnDate,
-    DisplayStatus DisplayStatus,
-    DeadlineUrgencyLevel DeadlineUrgency,
+    DisplayStatusCode DisplayStatus,
+    DeadlineUrgencyCode DeadlineUrgency,
     TaskCardMode Mode);
 
 /// <summary>Formatting helpers for cached Deadline countdown text.</summary>

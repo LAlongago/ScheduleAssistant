@@ -1,7 +1,6 @@
 using ScheduleAssistant.Application.Calendar;
 using ScheduleAssistant.Application.Common;
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 using ScheduleAssistant.Presentation.Composition;
 using ScheduleAssistant.Presentation.ViewModels;
 using Xunit;
@@ -69,7 +68,7 @@ public sealed class TaskEditorViewModelTests
         {
             Assert.Equal("新任务", command.Draft.Title);
             Assert.Equal(CategoryId, command.Draft.CategoryId);
-            Assert.Equal(TaskPriority.Important, command.Draft.Priority);
+            Assert.Equal(TaskPriorityCode.Important, command.Draft.Priority);
             Assert.Equal(new DateOnly(2026, 9, 21), command.Draft.PlannedDate);
             return ApplicationResult<TaskDto>.Success(
                 savedTask,
@@ -82,7 +81,7 @@ public sealed class TaskEditorViewModelTests
         fixture.ViewModel.CloseRequested += (_, _) => closeRequested++;
 
         fixture.ViewModel.Title = "新任务";
-        fixture.ViewModel.SelectedPriority = TaskPriority.Important;
+        fixture.ViewModel.SelectedPriority = TaskPriorityCode.Important;
         fixture.ViewModel.Description = "具体事务";
 
         await fixture.ViewModel.SaveCommand.ExecuteAsync(null);
@@ -280,8 +279,8 @@ public sealed class TaskEditorViewModelTests
             taskId ?? Guid.NewGuid(),
             title,
             CategoryId,
-            TaskPriority.Normal,
-            WorkflowStatus.Pending,
+            TaskPriorityCode.Normal,
+            WorkflowStatusCode.Pending,
             new DateOnly(2026, 9, 20),
             new TimeOnly(9, 0),
             new TimeOnly(10, 0),

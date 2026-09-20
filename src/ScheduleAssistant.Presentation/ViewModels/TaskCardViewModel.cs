@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ScheduleAssistant.Application.Common;
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 using ScheduleAssistant.Presentation.Composition;
 
 namespace ScheduleAssistant.Presentation.ViewModels;
@@ -129,10 +128,10 @@ public sealed class TaskCardViewModel : ObservableObject
     public string UrgencyText { get; private set; } = string.Empty;
 
     /// <summary>Gets the derived status value from the current calendar entry.</summary>
-    public DisplayStatus DisplayStatus { get; private set; }
+    public DisplayStatusCode DisplayStatus { get; private set; }
 
     /// <summary>Gets the derived Deadline urgency value from the current calendar entry.</summary>
-    public DeadlineUrgencyLevel DeadlineUrgency { get; private set; }
+    public DeadlineUrgencyCode DeadlineUrgency { get; private set; }
 
     /// <summary>Gets the accent reserved for future compact-card rendering.</summary>
     public CategoryAccent CategoryAccent { get; private set; }
@@ -211,11 +210,11 @@ public sealed class TaskCardViewModel : ObservableObject
                 _task = result.Value;
                 TaskId = result.Value.Id;
                 Version = result.Value.Version;
-                IsCompleted = result.Value.WorkflowStatus == WorkflowStatus.Completed;
-                DisplayStatus = IsCompleted ? DisplayStatus.Completed : DisplayStatus;
+                IsCompleted = result.Value.WorkflowStatus == WorkflowStatusCode.Completed;
+                DisplayStatus = IsCompleted ? DisplayStatusCode.Completed : DisplayStatus;
                 if (IsCompleted)
                 {
-                    DeadlineUrgency = DeadlineUrgencyLevel.None;
+                    DeadlineUrgency = DeadlineUrgencyCode.None;
                     UrgencyText = string.Empty;
                     OnPropertyChanged(nameof(DisplayStatus));
                     OnPropertyChanged(nameof(DeadlineUrgency));
@@ -261,6 +260,6 @@ public sealed class TaskCardViewModel : ObservableObject
         DisplayStatus = presentation.DisplayStatus;
         DeadlineUrgency = presentation.DeadlineUrgency;
         Mode = presentation.Mode;
-        _isCompleted = presentation.Task.WorkflowStatus == WorkflowStatus.Completed;
+        _isCompleted = presentation.Task.WorkflowStatus == WorkflowStatusCode.Completed;
     }
 }

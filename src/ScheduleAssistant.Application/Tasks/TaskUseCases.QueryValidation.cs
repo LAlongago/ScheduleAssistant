@@ -1,6 +1,4 @@
 using ScheduleAssistant.Application.Common;
-using ScheduleAssistant.Domain;
-
 namespace ScheduleAssistant.Application.Tasks;
 
 public sealed partial class TaskUseCases

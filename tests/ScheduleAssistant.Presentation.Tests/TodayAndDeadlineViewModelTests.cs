@@ -3,7 +3,6 @@ using ScheduleAssistant.Application.Abstractions.Events;
 using ScheduleAssistant.Application.Calendar;
 using ScheduleAssistant.Application.Common;
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 using ScheduleAssistant.Presentation.Composition;
 using ScheduleAssistant.Presentation.Controls;
 using ScheduleAssistant.Presentation.ViewModels;
@@ -26,44 +25,44 @@ public sealed class TodayAndDeadlineViewModelTests
             deadlineUtc: NowUtc.AddHours(3),
             isPlannedOnDate: true,
             isDeadlineOnDate: true,
-            displayStatus: DisplayStatus.NotStarted,
-            urgency: DeadlineUrgencyLevel.LessThanOneDay);
+            displayStatus: DisplayStatusCode.NotStarted,
+            urgency: DeadlineUrgencyCode.LessThanOneDay);
         var planOnly = CreateEntry(
             "同名",
             plannedDate: Today,
             isPlannedOnDate: true,
-            displayStatus: DisplayStatus.NotStarted,
-            urgency: DeadlineUrgencyLevel.None);
+            displayStatus: DisplayStatusCode.NotStarted,
+            urgency: DeadlineUrgencyCode.None);
         var sameTitle = CreateEntry(
             "同名",
             plannedDate: Today,
             isPlannedOnDate: true,
-            displayStatus: DisplayStatus.NotStarted,
-            urgency: DeadlineUrgencyLevel.None);
+            displayStatus: DisplayStatusCode.NotStarted,
+            urgency: DeadlineUrgencyCode.None);
         var overdue = CreateEntry(
             "已逾期",
             deadlineUtc: NowUtc.AddHours(-2),
             isDeadlineOnDate: true,
-            displayStatus: DisplayStatus.Overdue,
-            urgency: DeadlineUrgencyLevel.Overdue);
+            displayStatus: DisplayStatusCode.Overdue,
+            urgency: DeadlineUrgencyCode.Overdue);
         var plannedPast = CreateEntry(
             "计划已过",
             plannedDate: Today.AddDays(-1),
-            displayStatus: DisplayStatus.PlannedPast,
-            urgency: DeadlineUrgencyLevel.None);
+            displayStatus: DisplayStatusCode.PlannedPast,
+            urgency: DeadlineUrgencyCode.None);
         var deadlineOnly = CreateEntry(
             "今日截止",
             deadlineUtc: NowUtc.AddHours(5),
             isDeadlineOnDate: true,
-            displayStatus: DisplayStatus.NotStarted,
-            urgency: DeadlineUrgencyLevel.LessThanOneDay);
+            displayStatus: DisplayStatusCode.NotStarted,
+            urgency: DeadlineUrgencyCode.LessThanOneDay);
         var completed = CreateEntry(
             "已完成",
             plannedDate: Today,
             isPlannedOnDate: true,
-            displayStatus: DisplayStatus.Completed,
-            urgency: DeadlineUrgencyLevel.None,
-            workflowStatus: WorkflowStatus.Completed);
+            displayStatus: DisplayStatusCode.Completed,
+            urgency: DeadlineUrgencyCode.None,
+            workflowStatus: WorkflowStatusCode.Completed);
 
         useCases.TodayPending = Success(new TodayPendingDto(
             Today,
@@ -140,11 +139,11 @@ public sealed class TodayAndDeadlineViewModelTests
             "待完成",
             plannedDate: Today,
             isPlannedOnDate: true,
-            displayStatus: DisplayStatus.NotStarted,
-            urgency: DeadlineUrgencyLevel.None);
+            displayStatus: DisplayStatusCode.NotStarted,
+            urgency: DeadlineUrgencyCode.None);
         var completed = pending.Task with
         {
-            WorkflowStatus = WorkflowStatus.Completed,
+            WorkflowStatus = WorkflowStatusCode.Completed,
             CompletedAtUtc = NowUtc,
             UpdatedAtUtc = NowUtc,
             Version = pending.Task.Version + 1
@@ -212,7 +211,7 @@ public sealed class TodayAndDeadlineViewModelTests
             "缓存倒计时",
             deadlineUtc: NowUtc.AddHours(2),
             isDeadlineOnDate: true,
-            urgency: DeadlineUrgencyLevel.LessThanOneDay);
+            urgency: DeadlineUrgencyCode.LessThanOneDay);
         useCases.Deadlines = Success(new DeadlineQueryResult(new[] { deadline }, Array.Empty<CalendarEntry>()));
         var timeProvider = new MutableTimeProvider(NowUtc);
         var timer = new FakeDeadlineRefreshTimer();
@@ -266,15 +265,15 @@ public sealed class TodayAndDeadlineViewModelTests
         DateTimeOffset? deadlineUtc = null,
         bool isPlannedOnDate = false,
         bool isDeadlineOnDate = false,
-        DisplayStatus displayStatus = DisplayStatus.NotStarted,
-        DeadlineUrgencyLevel urgency = DeadlineUrgencyLevel.None,
-        WorkflowStatus workflowStatus = WorkflowStatus.Pending)
+        DisplayStatusCode displayStatus = DisplayStatusCode.NotStarted,
+        DeadlineUrgencyCode urgency = DeadlineUrgencyCode.None,
+        WorkflowStatusCode workflowStatus = WorkflowStatusCode.Pending)
     {
         var task = new TaskDto(
             Guid.NewGuid(),
             title,
             Guid.Empty,
-            TaskPriority.Normal,
+            TaskPriorityCode.Normal,
             workflowStatus,
             plannedDate,
             plannedDate.HasValue ? new TimeOnly(10, 0) : null,
@@ -295,7 +294,7 @@ public sealed class TodayAndDeadlineViewModelTests
             false,
             NowUtc.AddDays(-1),
             NowUtc,
-            workflowStatus == WorkflowStatus.Completed ? NowUtc : null,
+            workflowStatus == WorkflowStatusCode.Completed ? NowUtc : null,
             1);
         return new CalendarEntry(task, Today, isPlannedOnDate, isDeadlineOnDate, displayStatus, urgency);
     }

@@ -6,7 +6,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ScheduleAssistant.Application.Common;
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 using ScheduleAssistant.Presentation.Composition;
 
 namespace ScheduleAssistant.Presentation.ViewModels;
@@ -46,7 +45,7 @@ public sealed record TaskEditorRequest(
 public sealed record ReminderOffsetOption(int Value, string Label);
 
 /// <summary>One localized priority choice displayed by the editor.</summary>
-public sealed record TaskPriorityOption(TaskPriority Value, string Label);
+public sealed record TaskPriorityOption(TaskPriorityCode Value, string Label);
 
 /// <summary>
 /// MVVM state for creating and editing ordinary tasks. It only calls Application ports and never
@@ -79,7 +78,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     private long _expectedVersion;
     private string _title = string.Empty;
     private Guid _selectedCategoryId;
-    private TaskPriority _selectedPriority = TaskPriority.Normal;
+    private TaskPriorityCode _selectedPriority = TaskPriorityCode.Normal;
     private DateTime? _plannedDateValue;
     private string _plannedStartText = string.Empty;
     private string _plannedEndText = string.Empty;
@@ -119,10 +118,10 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
 
         PriorityOptions =
         [
-            new TaskPriorityOption(TaskPriority.UrgentAndImportant, "紧急且重要"),
-            new TaskPriorityOption(TaskPriority.Important, "重要"),
-            new TaskPriorityOption(TaskPriority.Normal, "一般"),
-            new TaskPriorityOption(TaskPriority.Low, "低")
+            new TaskPriorityOption(TaskPriorityCode.UrgentAndImportant, "紧急且重要"),
+            new TaskPriorityOption(TaskPriorityCode.Important, "重要"),
+            new TaskPriorityOption(TaskPriorityCode.Normal, "一般"),
+            new TaskPriorityOption(TaskPriorityCode.Low, "低")
         ];
         ReminderOffsetOptions =
         [
@@ -248,7 +247,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     }
 
     /// <summary>Gets or sets task priority.</summary>
-    public TaskPriority SelectedPriority
+    public TaskPriorityCode SelectedPriority
     {
         get => _selectedPriority;
         set => SetEditorProperty(ref _selectedPriority, value);

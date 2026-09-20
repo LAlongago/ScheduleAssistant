@@ -3,7 +3,6 @@ using ScheduleAssistant.Application.Abstractions.Events;
 using ScheduleAssistant.Application.Calendar;
 using ScheduleAssistant.Application.Common;
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 using ScheduleAssistant.Presentation.Composition;
 using ScheduleAssistant.Presentation.Controls;
 
@@ -264,8 +263,8 @@ public sealed class TodayPageViewModel : PageViewModelBase, IDisposable
         {
             var target = entry.DisplayStatus switch
             {
-                DisplayStatus.Overdue => OverdueTasks,
-                DisplayStatus.PlannedPast => PlannedPastTasks,
+                DisplayStatusCode.Overdue => OverdueTasks,
+                DisplayStatusCode.PlannedPast => PlannedPastTasks,
                 _ when entry.IsPlannedOnDate => PlannedTodayTasks,
                 _ when entry.IsDeadlineOnDate => DeadlineTodayTasks,
                 _ => PlannedPastTasks
@@ -273,7 +272,7 @@ public sealed class TodayPageViewModel : PageViewModelBase, IDisposable
             target.Add(_cardMapper!.Map(entry, _categories));
         }
 
-        foreach (var entry in calendar.Entries.Where(entry => entry.DisplayStatus == DisplayStatus.Completed))
+        foreach (var entry in calendar.Entries.Where(entry => entry.DisplayStatus == DisplayStatusCode.Completed))
         {
             CompletedTasks.Add(_cardMapper!.Map(entry, _categories));
         }

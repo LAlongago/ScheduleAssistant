@@ -1,5 +1,4 @@
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 
 namespace ScheduleAssistant.Application.Calendar;
 
@@ -12,8 +11,8 @@ public sealed record CalendarEntry(
     DateOnly DisplayDate,
     bool IsPlannedOnDate,
     bool IsDeadlineOnDate,
-    DisplayStatus DisplayStatus,
-    DeadlineUrgencyLevel DeadlineUrgency);
+    DisplayStatusCode DisplayStatus,
+    DeadlineUrgencyCode DeadlineUrgency);
 
 /// <summary>All entries for one date in a date, week, or month query.</summary>
 public sealed record CalendarDayDto(

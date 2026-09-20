@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using ScheduleAssistant.Application.Calendar;
 using ScheduleAssistant.Application.Tasks;
-using ScheduleAssistant.Domain;
 
 namespace ScheduleAssistant.Presentation.ViewModels;
 
@@ -52,7 +51,7 @@ public sealed class DeadlineCountdownViewModel : ObservableObject
     public string DeadlineText { get; }
 
     /// <summary>Gets the Deadline urgency returned by Application.</summary>
-    public DeadlineUrgencyLevel Urgency { get; }
+    public DeadlineUrgencyCode Urgency { get; }
 
     /// <summary>Gets the text label for the cached urgency.</summary>
     public string UrgencyText { get; }
@@ -73,28 +72,28 @@ public sealed class DeadlineCountdownViewModel : ObservableObject
         RemainingText = DeadlineTextFormatter.FormatRemaining(DeadlineUtc, nowUtc);
     }
 
-    private static string FormatPriority(TaskPriority priority)
+    private static string FormatPriority(TaskPriorityCode priority)
     {
         return priority switch
         {
-            TaskPriority.Low => "低优先级",
-            TaskPriority.Normal => "一般",
-            TaskPriority.Important => "重要",
-            TaskPriority.UrgentAndImportant => "紧急且重要",
+            TaskPriorityCode.Low => "低优先级",
+            TaskPriorityCode.Normal => "一般",
+            TaskPriorityCode.Important => "重要",
+            TaskPriorityCode.UrgentAndImportant => "紧急且重要",
             _ => "未指定优先级"
         };
     }
 
-    private static string FormatUrgency(DeadlineUrgencyLevel urgency)
+    private static string FormatUrgency(DeadlineUrgencyCode urgency)
     {
         return urgency switch
         {
-            DeadlineUrgencyLevel.None => string.Empty,
-            DeadlineUrgencyLevel.Neutral => "从容",
-            DeadlineUrgencyLevel.MoreThanThreeDays => "3 天以上",
-            DeadlineUrgencyLevel.OneToThreeDays => "1–3 天",
-            DeadlineUrgencyLevel.LessThanOneDay => "24 小时内",
-            DeadlineUrgencyLevel.Overdue => "已逾期",
+            DeadlineUrgencyCode.None => string.Empty,
+            DeadlineUrgencyCode.Neutral => "从容",
+            DeadlineUrgencyCode.MoreThanThreeDays => "3 天以上",
+            DeadlineUrgencyCode.OneToThreeDays => "1–3 天",
+            DeadlineUrgencyCode.LessThanOneDay => "24 小时内",
+            DeadlineUrgencyCode.Overdue => "已逾期",
             _ => string.Empty
         };
     }

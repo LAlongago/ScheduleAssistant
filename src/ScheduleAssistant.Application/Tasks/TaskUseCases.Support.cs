@@ -109,11 +109,11 @@ public sealed partial class TaskUseCases
         return Reminder.Create(id, task.Id, relativeOffsetMinutes, scheduledAtUtc, key);
     }
 
-    private DeadlineResolution ResolveDeadline(DeadlineInput? input)
+    private DomainDeadlineResolution ResolveDeadline(DeadlineInput? input)
     {
         return input is null
-            ? new DeadlineResolution(DeadlineResolutionStatus.Resolved, Deadline: null, Error: null)
-            : _deadlineResolver.Resolve(input);
+            ? new DomainDeadlineResolution(DeadlineResolutionStatus.Resolved, Deadline: null, Error: null)
+            : _deadlineResolver.ResolveDomain(input);
     }
 
     private static ApplicationError? ValidateCategory(Category? category)
@@ -188,8 +188,8 @@ public sealed partial class TaskUseCases
             task.Id,
             task.Title,
             task.CategoryId,
-            task.Priority,
-            task.WorkflowStatus,
+            TaskContractMapper.ToCode(task.Priority),
+            TaskContractMapper.ToCode(task.WorkflowStatus),
             task.PlannedDate,
             task.PlannedStart,
             task.PlannedEnd,
