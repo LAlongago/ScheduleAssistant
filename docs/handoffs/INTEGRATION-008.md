@@ -72,12 +72,12 @@
 - `TaskDraft`、`TaskDto`、`CalendarEntry`、搜索条件及 Deadline 解析结果均不再向 Presentation 暴露 Domain 类型；创建、编辑、查询和日历结果分别在 Application 边界完成转换。
 - `TaskEditorViewModel`、`TaskCardViewModel`、`TaskCardMapper`、`TodayPageViewModel` 与 `DeadlineCountdownViewModel` 移除 Domain 引用；Presentation 程序集只保留 Application 与 Infrastructure 生产依赖。
 - 新增 Application 映射双向覆盖测试；未修改 Infrastructure 仓储、Domain 模型、数据库编码或 migration。
-- DEV-048 的 Release build、Architecture.Tests、Application.Tests、Presentation.Tests 与 `git diff --check` 均已在集成 worktree 通过；PR #12 的 DEV-048 CI 仍待推送后执行。
+- DEV-048 的 Release build、Architecture.Tests、Application.Tests、Presentation.Tests 与 `git diff --check` 均已在集成 worktree 通过；PR #12 DEV-048 CI [Actions run 35515686213](https://github.com/LAlongago/ScheduleAssistant/actions/runs/35515686213) 全部通过。
 
 ## 最后提交 SHA
 
 - 核心整合合并提交：`3be052408d02eac50f95074807348f9a579f168d`。
 - 任务卡闪退修复提交：`76f1c21`。
 - DEV-047 累计版本前移至：`b65da8b`；整合记录提交为 `bedf314767519c0e25b6b32ed25a02bfe45ab23f`，CI 结果记录提交为 `6a39cd4`，均已推送。
-- DEV-048 提交：`948f3ce`；PR CI、人工验收和合并后的文档更新提交将在对应 handoff 继续补录。
+- DEV-048 提交：`948f3ce`；PR CI 已在 `14b8c26` 对应 HEAD 通过，人工验收和合并后的文档更新提交将在对应 handoff 继续补录。
 - Git 元数据存在；不使用伪造 SHA。
