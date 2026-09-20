@@ -157,8 +157,7 @@
                               Grid.Column="0"
                               AutomationProperties.Name="截止与提醒可选区域"
                               IsExpanded="False"
-                              VerticalAlignment="Top"
-                              Style="{StaticResource Expander.Card}">
+                              Style="{StaticResource Expander.OptionalCard}">
                         <Expander.Header>
                             <TextBlock Style="{StaticResource Text.SectionTitle}" Text="截止与提醒" />
                         </Expander.Header>
@@ -213,8 +212,7 @@
                               Grid.Column="2"
                               AutomationProperties.Name="任务内容可选区域"
                               IsExpanded="False"
-                              VerticalAlignment="Top"
-                              Style="{StaticResource Expander.Card}">
+                              Style="{StaticResource Expander.OptionalCard}">
                         <Expander.Header>
                             <TextBlock Style="{StaticResource Text.SectionTitle}" Text="内容" />
                         </Expander.Header>

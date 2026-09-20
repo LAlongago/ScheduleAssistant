@@ -394,4 +394,15 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="Expander.OptionalCard"
+           TargetType="{x:Type Expander}"
+           BasedOn="{StaticResource Expander.Card}">
+        <Setter Property="VerticalAlignment" Value="Top" />
+        <Style.Triggers>
+            <Trigger Property="IsExpanded" Value="True">
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
 </ResourceDictionary>

@@ -134,12 +134,23 @@ public sealed class CompositionRegistrationTests
                 deadlineHeaderToggle.IsChecked = true;
                 Assert.True(deadlineSection.IsExpanded);
                 Assert.False(contentSection.IsExpanded);
-                deadlineHeaderToggle.IsChecked = false;
+                Assert.Equal(VerticalAlignment.Stretch, deadlineSection.VerticalAlignment);
+                Assert.Equal(VerticalAlignment.Top, contentSection.VerticalAlignment);
                 var contentHeaderToggle = Assert.IsType<ToggleButton>(
                     contentSection.Template.FindName("HeaderToggle", contentSection));
                 contentHeaderToggle.IsChecked = true;
                 Assert.True(contentSection.IsExpanded);
-                Assert.False(deadlineSection.IsExpanded);
+                Assert.True(deadlineSection.IsExpanded);
+                editorWindow.UpdateLayout();
+                Assert.Equal(VerticalAlignment.Stretch, deadlineSection.VerticalAlignment);
+                Assert.Equal(VerticalAlignment.Stretch, contentSection.VerticalAlignment);
+                Assert.InRange(Math.Abs(deadlineSection.ActualHeight - contentSection.ActualHeight), 0, 0.1);
+                contentHeaderToggle.IsChecked = false;
+                Assert.True(deadlineSection.IsExpanded);
+                Assert.False(contentSection.IsExpanded);
+                Assert.Equal(VerticalAlignment.Stretch, deadlineSection.VerticalAlignment);
+                Assert.Equal(VerticalAlignment.Top, contentSection.VerticalAlignment);
+                deadlineHeaderToggle.IsChecked = false;
 
                 var hourTens = Assert.IsType<ComboBox>(plannedStartPicker.FindName("HourTensSelector"));
                 var hourOnes = Assert.IsType<ComboBox>(plannedStartPicker.FindName("HourOnesSelector"));
