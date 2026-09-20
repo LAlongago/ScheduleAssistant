@@ -30,9 +30,10 @@
                        Text="填写基本信息，并按需补充截止提醒与任务内容" />
         </StackPanel>
 
-        <ScrollViewer Grid.Row="1"
+        <ScrollViewer x:Name="EditorScrollViewer"
+                      Grid.Row="1"
                       HorizontalScrollBarVisibility="Disabled"
-                      VerticalScrollBarVisibility="Auto">
+                      VerticalScrollBarVisibility="Hidden">
             <StackPanel>
                 <Border x:Name="FormPrompt"
                         Margin="0,0,0,12"

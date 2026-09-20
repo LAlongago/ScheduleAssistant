@@ -89,6 +89,8 @@ public sealed class CompositionRegistrationTests
                     .GetRequiredService<ITaskEditorWindowFactory>()
                     .Create(editorViewModel);
                 var formPrompt = Assert.IsType<Border>(editorWindow.FindName("FormPrompt"));
+                var editorScrollViewer = Assert.IsType<ScrollViewer>(editorWindow.FindName("EditorScrollViewer"));
+                Assert.Equal(ScrollBarVisibility.Hidden, editorScrollViewer.VerticalScrollBarVisibility);
                 editorWindow.ShowActivated = false;
                 editorWindow.Opacity = 0;
                 editorWindow.Left = -10_000;
