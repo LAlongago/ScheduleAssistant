@@ -146,9 +146,14 @@ PR CI 首次运行：
 - 整合分支仅增加该 HostedService 的局部 `CA1873` 分析器说明，未改变启动、清理、事件或数据库语义。
 - 修复后的最小本地验证：Presentation build `0 warnings / 0 errors`；Presentation.Tests `34 passed / 0 failed / 0 skipped`；`git diff --check` 通过。
 
+PR CI 修复后运行：
+
+- Run：`35624619714` / [PR #14 CI](https://github.com/LAlongago/ScheduleAssistant/actions/runs/35624619714)；对应修复提交 HEAD：`86a3875a6cecd742603c28791ac6f0203e43edd6`。
+- `build-and-test`：通过；Release build、测试和 test results 上传均通过。仅保留 GitHub Actions 的 Node.js 20 弃用提示，不影响结果。
+
 ## 未完成、已知问题与后续依赖
 
-- PR 已创建为 [#14](https://github.com/LAlongago/ScheduleAssistant/pull/14)，首次 CI 失败原因和局部分析器修复已记录；修复后的新 HEAD 仍需推送并等待最新 CI。
+- PR 已创建为 [#14](https://github.com/LAlongago/ScheduleAssistant/pull/14)，首次 CI 失败原因、局部分析器修复及修复后 CI 通过均已记录。
 - 尚未进行用户人工验收；在人工验收通过前不得合并。
 - Computer Use 视觉通道此前不可用，因此 smoke 只证明 WPF 进程启动、窗口句柄和正常关闭，不把它表述为完整视觉验收。
 - DEV-061 周期编辑 UI、备份/恢复、Windows 通知/托盘/启动等仍为后续任务。
