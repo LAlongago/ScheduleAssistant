@@ -1,0 +1,77 @@
+<UserControl x:Class="ScheduleAssistant.Presentation.Controls.WeekTaskCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:ScheduleAssistant.Presentation.Controls">
+    <UserControl.Resources>
+        <controls:CategoryColorConverter x:Key="CategoryColorConverter" />
+        <Style x:Key="PlanMarker" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Accent}" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding PlanMarkerText}" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="DeadlineMarker" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource Text.Caption}">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Warning}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DeadlineMarkerText}" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <Border Style="{StaticResource CardBorder}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0"
+                    Background="{Binding CategoryColorHex, Converter={StaticResource CategoryColorConverter}}"
+                    CornerRadius="{DynamicResource Radius.AccentBar}" />
+            <Grid Grid.Column="1" Margin="{DynamicResource Spacing.GapSmall}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <CheckBox Grid.Row="0"
+                          Grid.Column="0"
+                          Margin="0,0,8,0"
+                          IsChecked="{Binding IsCompleted, Mode=OneWay}"
+                          IsEnabled="{Binding IsCompletionEnabled}"
+                          Command="{Binding CompletionCommand}"
+                          CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}"
+                          Style="{StaticResource CompletionCheckBox}" />
+                <TextBlock Grid.Row="0"
+                           Grid.Column="1"
+                           Style="{StaticResource Text.CardTitle}"
+                           Text="{Binding Title}" />
+                <StackPanel Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="0,4,0,0"
+                            Orientation="Horizontal">
+                    <TextBlock Style="{StaticResource PlanMarker}"
+                               Text="● 计划"
+                               ToolTip="计划事项"
+                               AutomationProperties.Name="计划事项" />
+                    <TextBlock Style="{StaticResource DeadlineMarker}"
+                               Text="◆ Deadline"
+                               ToolTip="Deadline"
+                               AutomationProperties.Name="Deadline" />
+                </StackPanel>
+                <TextBlock Grid.Row="2"
+                           Grid.Column="1"
+                           Margin="0,4,0,0"
+                           Style="{StaticResource Text.Caption}"
+                           Text="{Binding CategoryText}" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
