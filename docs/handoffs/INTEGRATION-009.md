@@ -84,10 +84,10 @@ WPF Release smoke：启动整合 worktree 的 `src\ScheduleAssistant.Presentatio
 - 需人工观察月历 6×7 布局、相邻月份弱化、三项截断/`+N`、日期详情和完成交互。
 - 需人工确认 Week、Month 与 Today、Upcoming Deadlines、任务编辑器之间切换后状态和事件刷新体验。
 - 顶部共享日期导航和搜索仍按 DEV-048/后续任务保持禁用；这不是本整合的回归。
-- 尚未推送整合分支或创建 PR；PR CI 和人工验收待交付流程继续执行。
+- 已创建面向 `main` 的 [PR #13](https://github.com/LAlongago/ScheduleAssistant/pull/13)；当前远端 PR HEAD 为 `96435c7f75eb4cb3c1946e8b286df091bc314671`，目标基线为 `f3bdacbf2f714507419e5746d48c63d1f77393ed`。
+- PR `build-and-test` CI 已通过（运行 `35579751026`，约 1 分 39 秒）；人工验收仍待完成。
 
 ## 最后提交 SHA
 
 整合代码提交 SHA：`734e3b9`、`d0e898a`。本 handoff 将作为后续整合记录提交；为避免 handoff 自引用，最终包含本记录的提交 SHA 在交付时另行报告。
-
 
