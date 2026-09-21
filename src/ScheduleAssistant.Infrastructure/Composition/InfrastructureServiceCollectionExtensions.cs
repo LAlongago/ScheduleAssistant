@@ -48,12 +48,21 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<SqliteCategoryRepository>();
         services.AddSingleton<ICategoryRepository>(serviceProvider =>
             new PersistenceMappingCategoryRepository(serviceProvider.GetRequiredService<SqliteCategoryRepository>()));
-        services.AddSingleton<IRecurrenceSeriesRepository, SqliteRecurrenceSeriesRepository>();
+        services.AddSingleton<SqliteRecurrenceSeriesRepository>();
+        services.AddSingleton<IRecurrenceSeriesRepository>(serviceProvider =>
+            new PersistenceMappingRecurrenceSeriesRepository(
+                serviceProvider.GetRequiredService<SqliteRecurrenceSeriesRepository>()));
         services.AddSingleton<SqliteReminderRepository>();
         services.AddSingleton<IReminderRepository>(serviceProvider =>
             new PersistenceMappingReminderRepository(serviceProvider.GetRequiredService<SqliteReminderRepository>()));
         services.AddSingleton<IAttachmentRepository, SqliteAttachmentRepository>();
-        services.AddSingleton<IRecurrenceExclusionRepository, SqliteRecurrenceExclusionRepository>();
+        services.AddSingleton<SqliteRecurrenceExclusionRepository>();
+        services.AddSingleton<IRecurrenceExclusionRepository>(serviceProvider =>
+            new PersistenceMappingRecurrenceExclusionRepository(
+                serviceProvider.GetRequiredService<SqliteRecurrenceExclusionRepository>()));
+        services.AddSingleton<IRecurrenceTaskRepository>(serviceProvider =>
+            new PersistenceMappingRecurrenceTaskRepository(
+                serviceProvider.GetRequiredService<SqliteTaskRepository>()));
 
         return services;
     }

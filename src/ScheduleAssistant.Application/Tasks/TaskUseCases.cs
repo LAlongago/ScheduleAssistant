@@ -1,6 +1,7 @@
 using ScheduleAssistant.Application.Abstractions.Events;
 using ScheduleAssistant.Application.Abstractions.Persistence;
 using ScheduleAssistant.Application.Common;
+using ScheduleAssistant.Application.Recurrence;
 using ScheduleAssistant.Domain;
 
 namespace ScheduleAssistant.Application.Tasks;
@@ -21,6 +22,7 @@ public sealed partial class TaskUseCases : ITaskUseCases
     private readonly TimeProvider _timeProvider;
     private readonly TaskDeadlineResolver _deadlineResolver;
     private readonly Func<Guid> _newId;
+    private readonly IRecurrenceMaterializer? _recurrenceMaterializer;
 
     /// <summary>Initializes the task use cases.</summary>
     public TaskUseCases(
@@ -31,7 +33,8 @@ public sealed partial class TaskUseCases : ITaskUseCases
         IApplicationEventPublisher? eventPublisher = null,
         TimeProvider? timeProvider = null,
         TaskDeadlineResolver? deadlineResolver = null,
-        Func<Guid>? idFactory = null)
+        Func<Guid>? idFactory = null,
+        IRecurrenceMaterializer? recurrenceMaterializer = null)
     {
         _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
         _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
@@ -41,6 +44,7 @@ public sealed partial class TaskUseCases : ITaskUseCases
         _timeProvider = timeProvider ?? TimeProvider.System;
         _deadlineResolver = deadlineResolver ?? new TaskDeadlineResolver();
         _newId = idFactory ?? Guid.NewGuid;
+        _recurrenceMaterializer = recurrenceMaterializer;
     }
 
     /// <inheritdoc />
@@ -267,13 +271,6 @@ public sealed partial class TaskUseCases : ITaskUseCases
             return ApplicationResult<TaskDto>.Failure(expectedVersionError);
         }
 
-        if (existing.SeriesId.HasValue)
-        {
-            return ApplicationResult<TaskDto>.Failure(ApplicationErrorMapper.Validation(
-                "Task.RecurrenceEditDeferred",
-                "Editing a recurrence instance is handled by the recurrence use case."));
-        }
-
         if (existing.CategoryId != command.Draft.CategoryId)
         {
             var category = await _categoryRepository
@@ -303,6 +300,10 @@ public sealed partial class TaskUseCases : ITaskUseCases
             command.Draft.Materials,
             command.Draft.Notes,
             updatedAtUtc);
+        if (existing.SeriesId.HasValue)
+        {
+            existing.MarkAsOccurrenceOverride(updatedAtUtc);
+        }
 
         var saved = await _taskRepository
             .UpdateAsync(existing, command.ExpectedVersion, transaction, cancellationToken)

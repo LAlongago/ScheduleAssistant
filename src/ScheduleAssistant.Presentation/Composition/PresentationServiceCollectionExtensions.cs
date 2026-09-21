@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Windows.Threading;
 using ScheduleAssistant.Application.Abstractions.Events;
+using ScheduleAssistant.Application.Recurrence;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Infrastructure.Persistence;
 using ScheduleAssistant.Presentation.ViewModels;
@@ -25,6 +26,14 @@ public static class PresentationServiceCollectionExtensions
         services.AddSingleton<InProcessEventBus>();
         services.AddSingleton<IApplicationEventPublisher>(serviceProvider =>
             serviceProvider.GetRequiredService<InProcessEventBus>());
+        services.AddSingleton<RecurrenceMaterializer>();
+        services.AddSingleton<IRecurrenceMaterializer>(serviceProvider =>
+            serviceProvider.GetRequiredService<RecurrenceMaterializer>());
+        services.AddSingleton<ITransactionalRecurrenceMaterializer>(serviceProvider =>
+            serviceProvider.GetRequiredService<RecurrenceMaterializer>());
+        services.AddSingleton<RecurrenceUseCases>();
+        services.AddSingleton<IRecurrenceUseCases>(serviceProvider =>
+            serviceProvider.GetRequiredService<RecurrenceUseCases>());
         services.AddSingleton<TaskUseCases>();
         services.AddSingleton<ITaskUseCases>(serviceProvider =>
             serviceProvider.GetRequiredService<TaskUseCases>());

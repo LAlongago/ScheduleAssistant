@@ -56,6 +56,17 @@ public sealed class SqliteRecurrenceSeriesRepository : SqliteRepositoryBase, IRe
     }
 
     /// <inheritdoc />
+    public async Task<RecurrenceSeries?> GetByIdAsync(
+        Guid id,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default)
+    {
+        var sqliteTransaction = RequireTransaction(transaction);
+        var row = await GetRowAsync(id, sqliteTransaction, cancellationToken).ConfigureAwait(false);
+        return row is null ? null : Map(row);
+    }
+
+    /// <inheritdoc />
     public async Task<IReadOnlyList<RecurrenceSeries>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken).ConfigureAwait(false);

@@ -59,6 +59,39 @@ public sealed record ReminderPlanChanged(
     IReadOnlyList<DateOnly> AffectedDates,
     bool HasPendingPlan) : TaskApplicationEvent(TaskId, Version, AffectedDates);
 
+/// <summary>Identifies the committed operation that changed a recurrence series or its instances.</summary>
+public enum RecurrenceChangeKind
+{
+    /// <summary>A new series was created.</summary>
+    Created,
+
+    /// <summary>Shared series fields or future ordinary instances were changed.</summary>
+    Updated,
+
+    /// <summary>Future materialization was disabled.</summary>
+    Deactivated,
+
+    /// <summary>One occurrence was excluded and its task was deleted.</summary>
+    OccurrenceDeleted,
+
+    /// <summary>Future unfinished ordinary instances were deleted or truncated.</summary>
+    FutureDeleted,
+
+    /// <summary>One or more ordinary task instances were materialized.</summary>
+    Materialized
+}
+
+/// <summary>
+/// Raised after a recurrence transaction commits. It derives from the task refresh event
+/// contract so existing calendar subscribers can refresh affected dates without knowing the
+/// recurrence persistence model.
+/// </summary>
+public sealed record RecurrenceSeriesChanged(
+    Guid SeriesId,
+    long Version,
+    IReadOnlyList<DateOnly> AffectedDates,
+    RecurrenceChangeKind ChangeKind) : TaskApplicationEvent(SeriesId, Version, AffectedDates);
+
 /// <summary>
 /// A small synchronous-in-process event bus. Subscribers are called in registration order;
 /// a subscriber failure is allowed to reach the committing use case so it can return a refresh signal.

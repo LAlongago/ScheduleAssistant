@@ -5,7 +5,7 @@ using ScheduleAssistant.Domain;
 namespace ScheduleAssistant.Infrastructure.Persistence.Repositories;
 
 /// <summary>SQLite repository for tasks and materialized recurrence instances.</summary>
-public sealed partial class SqliteTaskRepository : SqliteRepositoryBase, ITaskRepository
+public sealed partial class SqliteTaskRepository : SqliteRepositoryBase, ITaskRepository, IRecurrenceTaskRepository
 {
     private const string Columns = """
         id AS Id,
