@@ -78,16 +78,15 @@ git diff --check f3bdacbf2f714507419e5746d48c63d1f77393ed..HEAD
 
 WPF Release smoke：启动整合 worktree 的 `src\ScheduleAssistant.Presentation\bin\Release\net10.0-windows\ScheduleAssistant.exe` 后，进程拥有非零主窗口句柄，窗口标题为 `ScheduleAssistant`；调用 `CloseMainWindow()`，随后进程退出且未残留。Computer-use 窗口枚举在本机返回空并伴随浏览器连接错误，因此未伪造视觉验收结果；本次记录的是进程级启动与正常关闭证据。
 
-## 待人工验收项与已知事项
+## 人工验收结果与已知事项
 
-- 需人工观察周历七列宽度、单一垂直滚动、计划/Deadline 双标记、周导航与完成交互。
-- 需人工观察月历 6×7 布局、相邻月份弱化、三项截断/`+N`、日期详情和完成交互。
-- 需人工确认 Week、Month 与 Today、Upcoming Deadlines、任务编辑器之间切换后状态和事件刷新体验。
+- 2026-09-21，用户明确回复“验收通过”。
+- 用户验收覆盖周历七列布局、单一垂直滚动、计划/Deadline 双标记、周导航与完成交互；月历 6×7 布局、相邻月份弱化、三项截断/`+N`、日期详情与完成交互；以及 Week、Month 与 Today、Upcoming Deadlines、任务编辑器之间的切换和事件刷新共存体验。
+- 用户未提出新的整合问题，因此未追加代码修复或回归测试。
 - 顶部共享日期导航和搜索仍按 DEV-048/后续任务保持禁用；这不是本整合的回归。
-- 已创建面向 `main` 的 [PR #13](https://github.com/LAlongago/ScheduleAssistant/pull/13)；当前远端 PR HEAD 为 `96435c7f75eb4cb3c1946e8b286df091bc314671`，目标基线为 `f3bdacbf2f714507419e5746d48c63d1f77393ed`。
-- PR `build-and-test` CI 已通过（运行 `35579751026`，约 1 分 39 秒）；人工验收仍待完成。
+- 已创建面向 `main` 的 [PR #13](https://github.com/LAlongago/ScheduleAssistant/pull/13)；验收记录提交前远端 PR HEAD 为 `40428677bfef2fc8e2b92ff4642ad0f8e4e544a1`，目标基线为 `f3bdacbf2f714507419e5746d48c63d1f77393ed`。
+- 验收记录提交前 PR `build-and-test` CI 已通过（运行 `35580182074`）：https://github.com/LAlongago/ScheduleAssistant/actions/runs/35580182074/job/106270999557。
 
 ## 最后提交 SHA
 
 整合代码提交 SHA：`734e3b9`、`d0e898a`。本 handoff 将作为后续整合记录提交；为避免 handoff 自引用，最终包含本记录的提交 SHA 在交付时另行报告。
-
