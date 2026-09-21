@@ -17,6 +17,26 @@ public sealed class TaskDeadlineResolver
         Justification = "The instance is an injectable boundary so callers can replace the resolver in deterministic tests.")]
     public DeadlineResolution Resolve(DeadlineInput input)
     {
+        var resolved = ResolveDomain(input);
+        var deadline = resolved.Deadline;
+        return new DeadlineResolution(
+            resolved.Status,
+            deadline is null
+                ? null
+                : new DeadlineDto(
+                    deadline.LocalDate,
+                    deadline.LocalTime,
+                    deadline.TimeZoneId,
+                    deadline.Utc),
+            resolved.Error);
+    }
+
+    [SuppressMessage(
+        "Performance",
+        "CA1822",
+        Justification = "The resolver remains an injectable Application boundary for deterministic callers.")]
+    internal DomainDeadlineResolution ResolveDomain(DeadlineInput input)
+    {
         ArgumentNullException.ThrowIfNull(input);
 
         TimeZoneInfo timeZone;
@@ -93,22 +113,27 @@ public sealed class TaskDeadlineResolver
         return Resolved(input, resolvedUtc);
     }
 
-    private static DeadlineResolution Resolved(DeadlineInput input, DateTimeOffset utc)
+    private static DomainDeadlineResolution Resolved(DeadlineInput input, DateTimeOffset utc)
     {
-        return new DeadlineResolution(
+        return new DomainDeadlineResolution(
             DeadlineResolutionStatus.Resolved,
             ZonedDeadline.CreateResolvedUtc(input.LocalDate, input.LocalTime, input.TimeZoneId, utc),
             Error: null);
     }
 
-    private static DeadlineResolution Failure(
+    private static DomainDeadlineResolution Failure(
         DeadlineResolutionStatus status,
         string code,
         string message)
     {
-        return new DeadlineResolution(
+        return new DomainDeadlineResolution(
             status,
             Deadline: null,
             ApplicationErrorMapper.Validation(code, message));
     }
 }
+
+internal sealed record DomainDeadlineResolution(
+    DeadlineResolutionStatus Status,
+    ZonedDeadline? Deadline,
+    ApplicationError? Error);

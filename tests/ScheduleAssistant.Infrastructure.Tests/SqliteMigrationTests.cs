@@ -19,6 +19,9 @@ public sealed class SqliteMigrationTests
         var migrationName = await ScalarAsync(
             firstConnection,
             "SELECT name FROM schema_migrations WHERE version = 1;");
+        var seedMigrationName = await ScalarAsync(
+            firstConnection,
+            "SELECT name FROM schema_migrations WHERE version = 2;");
         var tables = await ScalarAsync(
             firstConnection,
             "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name IN (" +
@@ -29,6 +32,10 @@ public sealed class SqliteMigrationTests
         var checksum = await ScalarAsync(
             firstConnection,
             "SELECT checksum FROM schema_migrations WHERE version = 1;");
+        var categoryCount = await ScalarAsync(firstConnection, "SELECT COUNT(*) FROM categories;");
+        var defaultCategoryColor = await ScalarAsync(
+            firstConnection,
+            "SELECT color_hex FROM categories WHERE id = '10000000-0000-0000-0000-000000000001';");
 
         await database.Initializer.InitializeAsync();
 
@@ -38,15 +45,18 @@ public sealed class SqliteMigrationTests
             secondConnection,
             "SELECT applied_at_utc FROM schema_migrations WHERE version = 1;");
 
-        Assert.Equal(1L, Convert.ToInt64(firstCount, CultureInfo.InvariantCulture));
+        Assert.Equal(2L, Convert.ToInt64(firstCount, CultureInfo.InvariantCulture));
         Assert.Equal(firstCount, secondCount);
         Assert.Equal(firstAppliedAt, secondAppliedAt);
         Assert.Equal("001_initial_schema.sql", Convert.ToString(migrationName, CultureInfo.InvariantCulture));
+        Assert.Equal("002_seed_default_categories.sql", Convert.ToString(seedMigrationName, CultureInfo.InvariantCulture));
         Assert.Equal(9L, Convert.ToInt64(tables, CultureInfo.InvariantCulture));
         Assert.Equal(1L, Convert.ToInt64(foreignKeys, CultureInfo.InvariantCulture));
         Assert.Equal("wal", Convert.ToString(journalMode, CultureInfo.InvariantCulture));
         Assert.NotNull(checksum);
         Assert.NotEqual(string.Empty, checksum);
+        Assert.Equal(6L, Convert.ToInt64(categoryCount, CultureInfo.InvariantCulture));
+        Assert.Equal("#4F7CAC", Convert.ToString(defaultCategoryColor, CultureInfo.InvariantCulture));
     }
 
     [Fact]

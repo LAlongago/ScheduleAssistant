@@ -1,5 +1,3 @@
-using ScheduleAssistant.Domain;
-
 namespace ScheduleAssistant.Application.Tasks;
 
 /// <summary>Query for tasks shown on one local calendar date.</summary>
@@ -31,8 +29,8 @@ public sealed record GetDeadlinesQuery(DeadlineQueryRange Range = DeadlineQueryR
 public sealed record SearchTasksQuery(
     string? Keyword = null,
     Guid? CategoryId = null,
-    TaskPriority? Priority = null,
-    WorkflowStatus? WorkflowStatus = null,
+    TaskPriorityCode? Priority = null,
+    WorkflowStatusCode? WorkflowStatus = null,
     bool? IsOverdue = null,
     int PageNumber = 1,
     int PageSize = 50);

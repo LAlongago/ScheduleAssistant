@@ -1,5 +1,4 @@
 using ScheduleAssistant.Application.Common;
-using ScheduleAssistant.Domain;
 
 namespace ScheduleAssistant.Application.Tasks;
 
@@ -28,7 +27,7 @@ public sealed record ReminderPlanInput(
 public sealed record TaskDraft(
     string Title,
     Guid CategoryId,
-    TaskPriority Priority = TaskPriority.Normal,
+    TaskPriorityCode Priority = TaskPriorityCode.Normal,
     DateOnly? PlannedDate = null,
     TimeOnly? PlannedStart = null,
     TimeOnly? PlannedEnd = null,
@@ -75,8 +74,8 @@ public sealed record TaskDto(
     Guid Id,
     string Title,
     Guid CategoryId,
-    TaskPriority Priority,
-    WorkflowStatus WorkflowStatus,
+    TaskPriorityCode Priority,
+    WorkflowStatusCode WorkflowStatus,
     DateOnly? PlannedDate,
     TimeOnly? PlannedStart,
     TimeOnly? PlannedEnd,
@@ -122,5 +121,5 @@ public enum DeadlineResolutionStatus
 /// <summary>Outcome of explicit deadline conversion.</summary>
 public sealed record DeadlineResolution(
     DeadlineResolutionStatus Status,
-    ZonedDeadline? Deadline,
+    DeadlineDto? Deadline,
     ApplicationError? Error);

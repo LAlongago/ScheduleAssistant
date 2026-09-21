@@ -188,7 +188,7 @@ public sealed partial class TaskUseCases : ITaskUseCases
             _newId(),
             command.Draft.Title,
             command.Draft.CategoryId,
-            command.Draft.Priority,
+            TaskContractMapper.ToDomain(command.Draft.Priority),
             createdAtUtc,
             command.Draft.PlannedDate,
             command.Draft.PlannedStart,
@@ -293,7 +293,7 @@ public sealed partial class TaskUseCases : ITaskUseCases
         existing.UpdateDetails(
             command.Draft.Title,
             command.Draft.CategoryId,
-            command.Draft.Priority,
+            TaskContractMapper.ToDomain(command.Draft.Priority),
             command.Draft.PlannedDate,
             command.Draft.PlannedStart,
             command.Draft.PlannedEnd,

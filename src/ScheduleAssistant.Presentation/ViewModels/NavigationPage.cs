@@ -1,7 +1,7 @@
 namespace ScheduleAssistant.Presentation.ViewModels;
 
 /// <summary>
-/// The six top-level destinations in the DEV-040 application shell.
+/// The six top-level destinations in the application shell.
 /// </summary>
 public enum NavigationPage
 {

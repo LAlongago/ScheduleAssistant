@@ -114,7 +114,7 @@ public sealed class TaskUseCasesTests
             new ChangeTaskStateCommand(created.Value.Id, created.Value.Version));
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(WorkflowStatus.Completed, result.Value!.WorkflowStatus);
+        Assert.Equal(WorkflowStatusCode.Completed, result.Value!.WorkflowStatus);
         var reminders = context.Store.RemindersFor(created.Value.Id);
         Assert.Contains(reminders, reminder => reminder.Status == ReminderStatus.Cancelled);
         Assert.Contains(reminders, reminder => reminder.Status == ReminderStatus.Delivered);
@@ -294,7 +294,7 @@ public sealed class TaskUseCasesTests
         Assert.Equal(2, repeatedStart.Value!.Version);
         Assert.Equal(3, completed.Value!.Version);
         Assert.Equal(3, repeatedComplete.Value!.Version);
-        Assert.Equal(WorkflowStatus.Completed, repeatedComplete.Value.WorkflowStatus);
+        Assert.Equal(WorkflowStatusCode.Completed, repeatedComplete.Value.WorkflowStatus);
     }
 
     [Fact]
@@ -312,7 +312,7 @@ public sealed class TaskUseCasesTests
             new ChangeTaskStateCommand(created.Value.Id, restored.Value!.Version));
 
         Assert.True(restored.IsSuccess);
-        Assert.Equal(WorkflowStatus.Pending, restored.Value!.WorkflowStatus);
+        Assert.Equal(WorkflowStatusCode.Pending, restored.Value!.WorkflowStatus);
         Assert.Equal(3, repeated.Value!.Version);
         Assert.Single(context.Store.RemindersFor(created.Value.Id), reminder => reminder.Status == ReminderStatus.Pending);
     }

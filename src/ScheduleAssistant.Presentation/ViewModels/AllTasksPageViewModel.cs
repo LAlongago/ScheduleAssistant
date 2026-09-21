@@ -11,8 +11,8 @@ public sealed class AllTasksPageViewModel : PageViewModelBase
             "全部任务",
             "按关键词、类型、优先级和状态筛选",
             PageContentState.Empty,
-            "任务搜索尚未接入",
-            "搜索框保持禁用；DEV-031 的查询端口将在后续页面任务中接入。")
+            "全部任务搜索保留为占位",
+            "关键词、类型、优先级和状态筛选将在后续查询页面开放；当前搜索框保持关闭。")
     {
     }
 }

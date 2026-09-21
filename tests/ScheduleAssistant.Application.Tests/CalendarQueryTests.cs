@@ -66,7 +66,7 @@ public sealed class CalendarQueryTests
         var entry = Assert.Single(todayResult.Value!.Entries);
         Assert.Equal(historical.Id, entry.Task.Id);
         Assert.Equal(new DateOnly(2026, 1, 1), entry.DisplayDate);
-        Assert.Equal(DisplayStatus.PlannedPast, entry.DisplayStatus);
+        Assert.Equal(DisplayStatusCode.PlannedPast, entry.DisplayStatus);
         Assert.False(entry.IsPlannedOnDate);
     }
 

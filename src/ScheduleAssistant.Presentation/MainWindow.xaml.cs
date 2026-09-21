@@ -4,7 +4,7 @@ using ScheduleAssistant.Presentation.ViewModels;
 namespace ScheduleAssistant.Presentation;
 
 /// <summary>
-/// Main window for the DEV-040 application shell.
+/// Main window for the integrated ScheduleAssistant application shell.
 /// </summary>
 public partial class MainWindow : Window
 {

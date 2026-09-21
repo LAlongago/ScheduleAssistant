@@ -150,8 +150,8 @@ public sealed partial class TaskUseCases
         var filter = new TaskSearchFilter(
             NormalizeKeyword(query.Keyword),
             query.CategoryId,
-            query.Priority,
-            query.WorkflowStatus,
+            query.Priority.HasValue ? TaskContractMapper.ToDomain(query.Priority.Value) : null,
+            query.WorkflowStatus.HasValue ? TaskContractMapper.ToDomain(query.WorkflowStatus.Value) : null,
             query.IsOverdue,
             snapshot.NowUtc);
         var totalCount = await _taskRepository

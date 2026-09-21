@@ -50,8 +50,8 @@
     <SolidColorBrush x:Key="Brush.CategoryLife" Color="{StaticResource Color.CategoryLife}" />
     <SolidColorBrush x:Key="Brush.CategoryOther" Color="{StaticResource Color.CategoryOther}" />
 
-    <FontFamily x:Key="FontFamily.App">Segoe UI</FontFamily>
-    <FontFamily x:Key="FontFamily.Monospace">Cascadia Mono</FontFamily>
+    <FontFamily x:Key="FontFamily.App">Microsoft YaHei UI, Segoe UI Variable, Segoe UI</FontFamily>
+    <FontFamily x:Key="FontFamily.Monospace">Cascadia Mono, Consolas</FontFamily>
     <FontWeight x:Key="FontWeight.Regular">Regular</FontWeight>
     <FontWeight x:Key="FontWeight.SemiBold">SemiBold</FontWeight>
     <FontWeight x:Key="FontWeight.Bold">Bold</FontWeight>
