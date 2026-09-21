@@ -63,8 +63,8 @@
 - Week、Month、AllTasks、搜索、附件、周期和 Windows 集成功能仍是明确占位。
 - Git 直接实时查询最初因 Git Credential Manager 无凭据失败；随后确认 GitHub CLI 已登录并配置 Git 凭据，推送前后均核对 `origin/main` 为指定基线。
 - 原有 Presentation→Domain 程序集引用阻断已由 DEV-048 解决：Application 契约现在使用自有代码类型，Domain 枚举只在 Application 集中映射边界转换；架构测试恢复通过，未放宽架构规则。
-- 需要人工复测：新建合法任务保存后卡片应正常渲染；重启加载已有任务不应空白或闪退。
-- 人工验收和最终合并后的 main CI 尚未执行。
+- 2026-09-21 用户完成最终 WPF 人工复测并反馈无问题；新建/保存、布局、可选区展开、校验、放弃修改、截止范围和重启持久化未发现需要追加修复的现象。
+- 最终合并后的 `main` CI 尚未执行；PR 保持未合并状态。
 
 ## DEV-048 Presentation–Domain 架构边界修复
 
