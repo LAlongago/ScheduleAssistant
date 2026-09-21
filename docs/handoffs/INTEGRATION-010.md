@@ -138,9 +138,17 @@ WPF Release 启动/正常关闭 smoke：
 - `CloseMainWindow=True`；15 秒内正常退出；退出码 `0`；未使用强制终止；
 - 启动日志确认 `AttachmentMaintenance Completed 0 0`，并出现正常 Host shutdown。
 
+PR CI 首次运行：
+
+- Run：`35623810364` / [PR #14 CI](https://github.com/LAlongago/ScheduleAssistant/actions/runs/35623810364)。
+- `Release build` 首次失败，GitHub runner 的更新分析器报告 `CA1873`，位置为
+  `AttachmentMaintenanceHostedService.cs:54` 的启动诊断日志调用；测试步骤因此未执行。
+- 整合分支仅增加该 HostedService 的局部 `CA1873` 分析器说明，未改变启动、清理、事件或数据库语义。
+- 修复后的最小本地验证：Presentation build `0 warnings / 0 errors`；Presentation.Tests `34 passed / 0 failed / 0 skipped`；`git diff --check` 通过。
+
 ## 未完成、已知问题与后续依赖
 
-- 尚未推送整合分支、创建 PR 或等待 PR CI；这是本次本地交付后的下一步。
+- PR 已创建为 [#14](https://github.com/LAlongago/ScheduleAssistant/pull/14)，首次 CI 失败原因和局部分析器修复已记录；修复后的新 HEAD 仍需推送并等待最新 CI。
 - 尚未进行用户人工验收；在人工验收通过前不得合并。
 - Computer Use 视觉通道此前不可用，因此 smoke 只证明 WPF 进程启动、窗口句柄和正常关闭，不把它表述为完整视觉验收。
 - DEV-061 周期编辑 UI、备份/恢复、Windows 通知/托盘/启动等仍为后续任务。

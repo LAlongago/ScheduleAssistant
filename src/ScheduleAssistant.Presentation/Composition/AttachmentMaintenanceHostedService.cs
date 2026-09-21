@@ -14,6 +14,10 @@ namespace ScheduleAssistant.Presentation.Composition;
     "Performance",
     "CA1848",
     Justification = "The two startup messages contain only fixed operation/status fields and remain readable at this boundary.")]
+[SuppressMessage(
+    "Performance",
+    "CA1873",
+    Justification = "The startup report contains only bounded numeric counters; keep the diagnostic message provider-neutral.")]
 public sealed class AttachmentMaintenanceHostedService : IHostedService
 {
     private static readonly EventId MaintenanceCompletedEvent = new(7001, "AttachmentMaintenanceCompleted");
