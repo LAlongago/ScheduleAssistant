@@ -1,5 +1,6 @@
 using ScheduleAssistant.Application.Calendar;
 using ScheduleAssistant.Application.Common;
+using ScheduleAssistant.Application.Attachments;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Presentation.Composition;
 using ScheduleAssistant.Presentation.ViewModels;
@@ -161,6 +162,70 @@ public sealed class TaskEditorViewModelTests
     }
 
     [Fact]
+    public async Task NewTask_WhenAttachmentImportPartiallyFails_ShouldKeepTaskAndSuccessfulAttachment()
+    {
+        var attachments = new RecordingAttachmentUseCases();
+        var fixture = await CreateFixtureAsync(attachmentUseCases: attachments);
+        fixture.Interaction.SelectedAttachments =
+        [
+            new AttachmentFileSelection("C:\\source\\第一个.txt", "第一个.txt"),
+            new AttachmentFileSelection("C:\\source\\第二个.txt", "第二个.txt")
+        ];
+        var savedTask = CreateTaskDto("含附件任务");
+        fixture.UseCases.CreateHandler = _ => ApplicationResult<TaskDto>.Success(savedTask);
+        attachments.ImportHandler = command => command.SourcePath.Contains("第二个", StringComparison.Ordinal)
+            ? ApplicationResult<AttachmentDto>.Failure(
+                new ApplicationError(
+                    ApplicationErrorKind.StorageUnavailable,
+                    "Attachment.SourceUnavailable",
+                    "无法读取所选源文件，请确认文件仍然存在。"))
+            : ApplicationResult<AttachmentDto>.Success(CreateAttachmentDto(savedTask.Id, "第一个.txt"));
+
+        fixture.ViewModel.Title = "含附件任务";
+        await fixture.ViewModel.AddAttachmentCommand.ExecuteAsync(null);
+        var closeRequested = 0;
+        fixture.ViewModel.CloseRequested += (_, _) => closeRequested++;
+
+        await fixture.ViewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Single(fixture.UseCases.CreatedCommands);
+        Assert.Equal(2, attachments.ImportedCommands.Count);
+        Assert.Contains(fixture.ViewModel.AttachmentItems, item => !item.IsPending);
+        Assert.Contains(fixture.ViewModel.AttachmentItems, item => item.IsPending);
+        Assert.Contains("任务已保存", fixture.ViewModel.ErrorMessage);
+        Assert.True(fixture.ViewModel.IsDirty);
+        Assert.Equal(0, closeRequested);
+    }
+
+    [Fact]
+    public async Task EditTask_WhenInitializedWithAttachments_ShouldLoadAndRouteAttachmentActions()
+    {
+        var task = CreateTaskDto("带附件任务");
+        var attachments = new RecordingAttachmentUseCases
+        {
+            ExistingAttachments = [CreateAttachmentDto(task.Id, "旧名称.pdf")]
+        };
+        var fixture = await CreateFixtureAsync(
+            TaskEditorRequest.Edit(task.Id),
+            taskToLoad: task,
+            attachmentUseCases: attachments);
+
+        var item = Assert.Single(fixture.ViewModel.AttachmentItems);
+        fixture.Interaction.RenamedDisplayName = "新名称.pdf";
+        await fixture.ViewModel.OpenAttachmentCommand.ExecuteAsync(item);
+        await fixture.ViewModel.RevealAttachmentCommand.ExecuteAsync(item);
+        await fixture.ViewModel.RenameAttachmentCommand.ExecuteAsync(item);
+        await fixture.ViewModel.RemoveAttachmentCommand.ExecuteAsync(item);
+
+        Assert.Equal(task.Id, attachments.OpenedTaskIds.Single());
+        Assert.Equal(task.Id, attachments.RevealedTaskIds.Single());
+        Assert.Equal("新名称.pdf", attachments.RenamedCommands.Single().DisplayName);
+        Assert.Single(attachments.RemovedTaskIds);
+        Assert.Equal(1, fixture.Interaction.RemoveConfirmationCalls);
+        Assert.Empty(fixture.ViewModel.AttachmentItems);
+    }
+
+    [Fact]
     public async Task Save_WhenDeadlineIsBeforePlannedDate_ShouldRequireExplicitConfirmation()
     {
         var fixture = await CreateFixtureAsync();
@@ -250,7 +315,8 @@ public sealed class TaskEditorViewModelTests
         TaskEditorRequest? request = null,
         DateOnly? prefilledPlannedDate = null,
         TaskDto? taskToLoad = null,
-        string localTimeZoneId = "UTC")
+        string localTimeZoneId = "UTC",
+        RecordingAttachmentUseCases? attachmentUseCases = null)
     {
         var useCases = new RecordingTaskUseCases
         {
@@ -258,15 +324,17 @@ public sealed class TaskEditorViewModelTests
             TaskToGet = taskToLoad
         };
         var interaction = new RecordingInteractionService();
+        attachmentUseCases ??= new RecordingAttachmentUseCases();
         var viewModel = new TaskEditorViewModel(
             useCases,
             new FixedTimeProvider(),
             interaction,
             request ?? TaskEditorRequest.Create(prefilledPlannedDate),
-            localTimeZoneId: localTimeZoneId);
+            localTimeZoneId: localTimeZoneId,
+            attachmentUseCases: attachmentUseCases);
         await viewModel.InitializeAsync();
         Assert.True(viewModel.IsInitialized);
-        return new EditorFixture(viewModel, useCases, interaction);
+        return new EditorFixture(viewModel, useCases, interaction, attachmentUseCases);
     }
 
     private static TaskDto CreateTaskDto(
@@ -301,7 +369,8 @@ public sealed class TaskEditorViewModelTests
     private sealed record EditorFixture(
         TaskEditorViewModel ViewModel,
         RecordingTaskUseCases UseCases,
-        RecordingInteractionService Interaction);
+        RecordingInteractionService Interaction,
+        RecordingAttachmentUseCases Attachments);
 
     private sealed class FixedTimeProvider : TimeProvider
     {
@@ -327,6 +396,15 @@ public sealed class TaskEditorViewModelTests
 
         public Func<IReadOnlyList<DateTimeOffset>, DateTimeOffset?>? AmbiguousResultSelector { get; set; }
 
+        public IReadOnlyList<AttachmentFileSelection> SelectedAttachments { get; set; } =
+            Array.Empty<AttachmentFileSelection>();
+
+        public string? RenamedDisplayName { get; set; }
+
+        public bool ConfirmRemoveResult { get; set; } = true;
+
+        public int RemoveConfirmationCalls { get; private set; }
+
         public bool ConfirmDeadlineBeforePlannedDate(DateOnly plannedDate, DateOnly deadlineDate)
         {
             DeadlineConfirmationCalls++;
@@ -349,6 +427,99 @@ public sealed class TaskEditorViewModelTests
             DiscardConfirmationCalls++;
             return DiscardChangesResult;
         }
+
+        public IReadOnlyList<AttachmentFileSelection> SelectAttachmentFiles() => SelectedAttachments;
+
+        public string? PromptAttachmentDisplayName(string currentDisplayName) => RenamedDisplayName ?? currentDisplayName;
+
+        public bool ConfirmRemoveAttachment(string displayName)
+        {
+            RemoveConfirmationCalls++;
+            return ConfirmRemoveResult;
+        }
+    }
+
+    private sealed class RecordingAttachmentUseCases : IAttachmentUseCases
+    {
+        public IReadOnlyList<AttachmentDto> ExistingAttachments { get; init; } =
+            Array.Empty<AttachmentDto>();
+
+        public Func<ImportAttachmentCommand, ApplicationResult<AttachmentDto>> ImportHandler { get; set; } =
+            command => ApplicationResult<AttachmentDto>.Success(
+                CreateAttachmentDto(command.TaskId, Path.GetFileName(command.SourcePath)));
+
+        public List<ImportAttachmentCommand> ImportedCommands { get; } = [];
+        public List<RenameAttachmentCommand> RenamedCommands { get; } = [];
+        public List<Guid> OpenedTaskIds { get; } = [];
+        public List<Guid> RevealedTaskIds { get; } = [];
+        public List<Guid> RemovedTaskIds { get; } = [];
+
+        public Task<ApplicationResult<IReadOnlyList<AttachmentDto>>> GetByTaskIdAsync(
+            GetAttachmentsByTaskQuery query,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(ApplicationResult<IReadOnlyList<AttachmentDto>>.Success(ExistingAttachments));
+
+        public Task<ApplicationResult<AttachmentDto>> ImportAsync(
+            ImportAttachmentCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            ImportedCommands.Add(command);
+            return Task.FromResult(ImportHandler(command));
+        }
+
+        public Task<ApplicationResult<AttachmentDto>> OpenAsync(
+            OpenAttachmentCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            OpenedTaskIds.Add(command.TaskId);
+            return Task.FromResult(ApplicationResult<AttachmentDto>.Success(
+                CreateAttachmentDto(command.TaskId, "旧名称.pdf", command.AttachmentId)));
+        }
+
+        public Task<ApplicationResult<AttachmentDto>> RevealAsync(
+            RevealAttachmentCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            RevealedTaskIds.Add(command.TaskId);
+            return Task.FromResult(ApplicationResult<AttachmentDto>.Success(
+                CreateAttachmentDto(command.TaskId, "旧名称.pdf", command.AttachmentId)));
+        }
+
+        public Task<ApplicationResult<AttachmentDto>> RenameAsync(
+            RenameAttachmentCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            RenamedCommands.Add(command);
+            return Task.FromResult(ApplicationResult<AttachmentDto>.Success(
+                CreateAttachmentDto(command.TaskId, command.DisplayName, command.AttachmentId)));
+        }
+
+        public Task<ApplicationResult<AttachmentRemovalResult>> RemoveAsync(
+            RemoveAttachmentCommand command,
+            CancellationToken cancellationToken = default)
+        {
+            RemovedTaskIds.Add(command.TaskId);
+            return Task.FromResult(ApplicationResult<AttachmentRemovalResult>.Success(
+                new AttachmentRemovalResult(command.AttachmentId, false)));
+        }
+    }
+
+    private static AttachmentDto CreateAttachmentDto(
+        Guid taskId,
+        string displayName,
+        Guid? attachmentId = null)
+    {
+        var id = attachmentId ?? Guid.NewGuid();
+        return new AttachmentDto(
+            id,
+            taskId,
+            displayName,
+            $"{taskId:D}/{id:D}_{displayName}",
+            Path.GetExtension(displayName),
+            "application/octet-stream",
+            10,
+            new string('a', 64),
+            new DateTimeOffset(2026, 9, 21, 1, 0, 0, TimeSpan.Zero));
     }
 
     private sealed class RecordingTaskUseCases : ITaskUseCases

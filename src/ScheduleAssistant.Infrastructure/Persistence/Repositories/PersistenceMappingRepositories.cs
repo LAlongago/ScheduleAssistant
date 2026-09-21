@@ -241,3 +241,37 @@ internal sealed class PersistenceMappingReminderRepository : IReminderRepository
     public Task<int> CancelPendingByTaskIdAsync(Guid taskId, IPersistenceTransaction transaction, CancellationToken cancellationToken = default) =>
         PersistenceExceptionMapper.ExecuteAsync("Reminder.CancelPendingByTaskIdInTransaction", () => _inner.CancelPendingByTaskIdAsync(taskId, transaction, cancellationToken));
 }
+
+internal sealed class PersistenceMappingAttachmentRepository : IAttachmentRepository
+{
+    private readonly IAttachmentRepository _inner;
+
+    public PersistenceMappingAttachmentRepository(IAttachmentRepository inner)
+    {
+        _inner = inner;
+    }
+
+    public Task<Attachment?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.GetById", () => _inner.GetByIdAsync(id, cancellationToken));
+
+    public Task<IReadOnlyList<Attachment>> GetByTaskIdAsync(Guid taskId, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.GetByTaskId", () => _inner.GetByTaskIdAsync(taskId, cancellationToken));
+
+    public Task<IReadOnlyList<Attachment>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.GetAll", () => _inner.GetAllAsync(cancellationToken));
+
+    public Task AddAsync(Attachment attachment, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.Add", () => _inner.AddAsync(attachment, cancellationToken));
+
+    public Task AddAsync(Attachment attachment, IPersistenceTransaction transaction, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.AddInTransaction", () => _inner.AddAsync(attachment, transaction, cancellationToken));
+
+    public Task UpdateDisplayNameAsync(Attachment attachment, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.UpdateDisplayName", () => _inner.UpdateDisplayNameAsync(attachment, cancellationToken));
+
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.Delete", () => _inner.DeleteAsync(id, cancellationToken));
+
+    public Task DeleteAsync(Guid id, IPersistenceTransaction transaction, CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync("Attachment.DeleteInTransaction", () => _inner.DeleteAsync(id, transaction, cancellationToken));
+}

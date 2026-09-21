@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ScheduleAssistant.Application.Attachments;
 using ScheduleAssistant.Application.Common;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Presentation.Composition;
@@ -60,6 +61,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     private readonly ITaskEditorInteractionService _interactionService;
     private readonly TaskDeadlineResolver _deadlineResolver;
     private readonly TaskEditorRequest _request;
+    private readonly IAttachmentUseCases? _attachmentUseCases;
     private readonly List<CategoryOptionDto> _categoryOptions = [];
     private readonly Dictionary<string, IReadOnlyList<string>> _errors = new(StringComparer.Ordinal);
 
@@ -76,6 +78,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     private readonly bool _recurrenceEnabled;
     private DateTimeOffset? _confirmedDeadlineUtc;
     private long _expectedVersion;
+    private Guid? _persistedTaskId;
     private string _title = string.Empty;
     private Guid _selectedCategoryId;
     private TaskPriorityCode _selectedPriority = TaskPriorityCode.Normal;
@@ -103,14 +106,16 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         ITaskEditorInteractionService interactionService,
         TaskEditorRequest request,
         TaskDeadlineResolver? deadlineResolver = null,
-        string? localTimeZoneId = null)
+        string? localTimeZoneId = null,
+        IAttachmentUseCases? attachmentUseCases = null)
     {
         _taskUseCases = taskUseCases ?? throw new ArgumentNullException(nameof(taskUseCases));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
         _request = request ?? throw new ArgumentNullException(nameof(request));
+        _attachmentUseCases = attachmentUseCases;
         _deadlineResolver = deadlineResolver ?? new TaskDeadlineResolver();
-        _attachmentsEnabled = false;
+        _attachmentsEnabled = attachmentUseCases is not null;
         _recurrenceEnabled = false;
         _timeZoneId = string.IsNullOrWhiteSpace(localTimeZoneId)
             ? TimeZoneInfo.Local.Id
@@ -133,6 +138,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         SaveCommand = new AsyncRelayCommand(SaveAsync, () => CanSave);
         ReloadCommand = new AsyncRelayCommand(ReloadAsync, () => CanReload);
         CancelCommand = new RelayCommand(RequestCancel);
+        InitializeAttachmentState();
     }
 
     /// <summary>Raised when the editor has committed and should be closed.</summary>
@@ -382,9 +388,9 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     /// <summary>Gets whether attachment persistence is available in this task package.</summary>
     public bool IsAttachmentsEnabled => _attachmentsEnabled;
 
-    /// <summary>Explains the honest attachment placeholder without pretending to save files.</summary>
-    public string AttachmentsPlaceholder => _request.Mode == TaskEditorMode.Create
-        ? "附件功能保留为占位；DEV-070 接入后才会保存受管副本。"
+    /// <summary>Explains the attachment area or the unavailable optional port.</summary>
+    public string AttachmentsPlaceholder => IsAttachmentsEnabled
+        ? "源文件不会被删除；保存任务后将逐个复制到应用管理目录。"
         : "附件功能保留为占位；DEV-070 接入后才会保存受管副本。";
 
     /// <summary>Gets whether recurrence persistence is available in this task package.</summary>
@@ -459,6 +465,8 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
             {
                 ApplyCreateDefaults(categoriesResult.Value);
             }
+
+            await LoadAttachmentsAsync(cancellationToken).ConfigureAwait(false);
 
             _isInitialized = true;
             OnPropertyChanged(nameof(IsInitialized));
@@ -586,6 +594,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         OnPropertyChanged(nameof(CanReload));
         SaveCommand.NotifyCanExecuteChanged();
         ReloadCommand.NotifyCanExecuteChanged();
+        NotifyAttachmentCommandState();
     }
 
     private void ReplaceCategoryOptions(IReadOnlyList<CategoryOptionDto> options)
@@ -614,6 +623,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         {
             _isApplyingValues = false;
             _isDirty = false;
+            _persistedTaskId = null;
         }
     }
 
@@ -623,6 +633,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         try
         {
             _expectedVersion = task.Version;
+            _persistedTaskId = task.Id;
             Title = task.Title;
             SelectedCategoryId = task.CategoryId;
             SelectedPriority = task.Priority;

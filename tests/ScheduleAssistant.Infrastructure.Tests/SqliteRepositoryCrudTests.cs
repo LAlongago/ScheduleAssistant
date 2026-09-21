@@ -71,6 +71,19 @@ public sealed class SqliteRepositoryCrudTests
         Assert.Equal(reminderBeforeDeadline.DeduplicationKey, reloadedReminders[0].DeduplicationKey);
         Assert.Equal(attachment.DisplayName, reloadedAttachment!.DisplayName);
         Assert.Equal(attachment.ManagedRelativePath, reloadedAttachment.ManagedRelativePath);
+        var renamedAttachment = Attachment.Rehydrate(
+            attachment.Id,
+            attachment.TaskId,
+            "材料最终版.pdf",
+            attachment.ManagedRelativePath,
+            attachment.SizeBytes,
+            attachment.Extension,
+            attachment.MimeType,
+            attachment.Sha256,
+            attachment.ImportedAtUtc);
+        await database.Attachments.UpdateDisplayNameAsync(renamedAttachment);
+        Assert.Equal("材料最终版.pdf", (await database.Attachments.GetByIdAsync(attachment.Id))!.DisplayName);
+        Assert.Single(await database.Attachments.GetAllAsync());
         Assert.Single(reloadedExclusions);
 
         category.UpdateDetails("更新分类", "#AABBCC", 20, isArchived: true, PersistenceTestData.CreatedAtUtc.AddDays(1));

@@ -256,8 +256,93 @@
                             IsEnabled="{Binding IsAttachmentsEnabled}"
                             Padding="{DynamicResource Spacing.Card}">
                         <StackPanel>
-                            <TextBlock Style="{StaticResource Text.SectionTitle}" Text="附件" />
-                            <TextBlock Margin="0,6,0,0" Style="{StaticResource Text.Caption}" Text="{Binding AttachmentsPlaceholder}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Style="{StaticResource Text.SectionTitle}" Text="附件" />
+                                <Button Grid.Column="1"
+                                        AutomationProperties.Name="添加附件"
+                                        Command="{Binding AddAttachmentCommand}"
+                                        Content="添加附件"
+                                        Style="{StaticResource Button.Secondary}" />
+                            </Grid>
+                            <TextBlock Margin="0,6,0,0"
+                                       Style="{StaticResource Text.Caption}"
+                                       Text="{Binding AttachmentsPlaceholder}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Margin="0,6,0,0"
+                                       Foreground="{DynamicResource Brush.Danger}"
+                                       Text="{Binding AttachmentErrorMessage}"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding HasAttachmentError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            <TextBlock Margin="0,8,0,0"
+                                       Style="{StaticResource Text.Caption}"
+                                       Text="尚未添加附件。"
+                                       Visibility="{Binding IsAttachmentListEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                            <ItemsControl Margin="0,8,0,0" ItemsSource="{Binding AttachmentItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,6"
+                                                Padding="8"
+                                                Background="{DynamicResource Brush.WindowBackground}"
+                                                BorderBrush="{DynamicResource Brush.Border}"
+                                                BorderThickness="{DynamicResource BorderThickness.Subtle}"
+                                                CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel>
+                                                    <TextBlock FontWeight="SemiBold"
+                                                               Text="{Binding DisplayName}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding DisplayName}" />
+                                                    <StackPanel Margin="0,3,0,0" Orientation="Horizontal">
+                                                        <TextBlock Style="{StaticResource Text.Caption}" Text="{Binding SizeText}" />
+                                                        <TextBlock Margin="8,0,0,0"
+                                                                   Foreground="{DynamicResource Brush.Warning}"
+                                                                   Style="{StaticResource Text.Caption}"
+                                                                   Text="{Binding StatusText}"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                                    <Button Margin="6,0,0,0"
+                                                            AutomationProperties.Name="打开附件"
+                                                            Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                            CommandParameter="{Binding}"
+                                                            Content="打开"
+                                                            IsEnabled="{Binding CanOpen}"
+                                                            Style="{StaticResource Button.Secondary}" />
+                                                    <Button Margin="6,0,0,0"
+                                                            AutomationProperties.Name="定位附件"
+                                                            Command="{Binding DataContext.RevealAttachmentCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                            CommandParameter="{Binding}"
+                                                            Content="定位"
+                                                            IsEnabled="{Binding CanReveal}"
+                                                            Style="{StaticResource Button.Secondary}" />
+                                                    <Button Margin="6,0,0,0"
+                                                            AutomationProperties.Name="重命名附件"
+                                                            Command="{Binding DataContext.RenameAttachmentCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                            CommandParameter="{Binding}"
+                                                            Content="重命名"
+                                                            IsEnabled="{Binding CanRename}"
+                                                            Style="{StaticResource Button.Secondary}" />
+                                                    <Button Margin="6,0,0,0"
+                                                            AutomationProperties.Name="移除附件"
+                                                            Command="{Binding DataContext.RemoveAttachmentCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                            CommandParameter="{Binding}"
+                                                            Content="移除"
+                                                            Style="{StaticResource Button.Secondary}" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </Border>
                     <Border Grid.Row="4"
