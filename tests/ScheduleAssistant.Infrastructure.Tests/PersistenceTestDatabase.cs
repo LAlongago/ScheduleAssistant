@@ -1,3 +1,4 @@
+using ScheduleAssistant.Application.Abstractions.Attachments;
 using Microsoft.Data.Sqlite;
 using ScheduleAssistant.Application.Abstractions.Persistence;
 using ScheduleAssistant.Domain;
@@ -20,6 +21,7 @@ internal sealed class PersistenceTestDatabase : IAsyncDisposable
         Series = new SqliteRecurrenceSeriesRepository(ConnectionFactory, TransactionFactory);
         Reminders = new SqliteReminderRepository(ConnectionFactory, TransactionFactory);
         Attachments = new SqliteAttachmentRepository(ConnectionFactory, TransactionFactory);
+        CleanupQueue = new SqliteAttachmentCleanupQueue(ConnectionFactory, TransactionFactory);
         Exclusions = new SqliteRecurrenceExclusionRepository(ConnectionFactory, TransactionFactory);
     }
 
@@ -42,6 +44,8 @@ internal sealed class PersistenceTestDatabase : IAsyncDisposable
     public IReminderRepository Reminders { get; }
 
     public IAttachmentRepository Attachments { get; }
+
+    public IAttachmentCleanupQueue CleanupQueue { get; }
 
     public IRecurrenceExclusionRepository Exclusions { get; }
 

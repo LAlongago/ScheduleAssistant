@@ -8,6 +8,12 @@ public interface IRecurrenceSeriesRepository
     /// <summary>Finds a recurrence series by identity.</summary>
     Task<RecurrenceSeries?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    /// <summary>Reads a recurrence series through a caller-owned transaction.</summary>
+    Task<RecurrenceSeries?> GetByIdAsync(
+        Guid id,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Gets enabled or disabled recurrence series in identity order.</summary>
     Task<IReadOnlyList<RecurrenceSeries>> GetAllAsync(CancellationToken cancellationToken = default);
 

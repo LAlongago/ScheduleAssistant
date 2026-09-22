@@ -53,6 +53,16 @@ public sealed class SqliteAttachmentRepository : SqliteRepositoryBase, IAttachme
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<Attachment>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        var rows = await connection.QueryAsync<AttachmentRow>(new CommandDefinition(
+            $"SELECT {Columns} FROM attachments ORDER BY imported_at_utc, id;",
+            cancellationToken: cancellationToken)).ConfigureAwait(false);
+        return rows.Select(Map).ToArray();
+    }
+
+    /// <inheritdoc />
     public Task AddAsync(Attachment attachment, CancellationToken cancellationToken = default)
     {
         return InTransactionAsync(transaction => AddCoreAsync(attachment, transaction, cancellationToken), cancellationToken);
@@ -62,6 +72,12 @@ public sealed class SqliteAttachmentRepository : SqliteRepositoryBase, IAttachme
     public Task AddAsync(Attachment attachment, IPersistenceTransaction transaction, CancellationToken cancellationToken = default)
     {
         return AddCoreAsync(attachment, RequireTransaction(transaction), cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task UpdateDisplayNameAsync(Attachment attachment, CancellationToken cancellationToken = default)
+    {
+        return InTransactionAsync(transaction => UpdateDisplayNameCoreAsync(attachment, transaction, cancellationToken), cancellationToken);
     }
 
     /// <inheritdoc />
@@ -106,6 +122,27 @@ public sealed class SqliteAttachmentRepository : SqliteRepositoryBase, IAttachme
             new { Id = SqliteValueConverter.ToGuid(id) },
             transaction,
             cancellationToken)).ConfigureAwait(false);
+    }
+
+    private static async Task UpdateDisplayNameCoreAsync(
+        Attachment attachment,
+        SqlitePersistenceTransaction transaction,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(attachment);
+        var affected = await transaction.Connection.ExecuteAsync(Command(
+            "UPDATE attachments SET display_name = @DisplayName WHERE id = @Id;",
+            new
+            {
+                Id = SqliteValueConverter.ToGuid(attachment.Id),
+                attachment.DisplayName
+            },
+            transaction,
+            cancellationToken)).ConfigureAwait(false);
+        if (affected == 0)
+        {
+            throw new PersistenceNotFoundException(nameof(Attachment), attachment.Id);
+        }
     }
 
     private static object Parameters(Attachment attachment)

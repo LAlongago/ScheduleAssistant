@@ -204,5 +204,12 @@ public sealed class CompositionRegistrationTests
         }
 
         public bool ConfirmDiscardChanges() => true;
+
+        public IReadOnlyList<AttachmentFileSelection> SelectAttachmentFiles() =>
+            Array.Empty<AttachmentFileSelection>();
+
+        public string? PromptAttachmentDisplayName(string currentDisplayName) => currentDisplayName;
+
+        public bool ConfirmRemoveAttachment(string displayName) => true;
     }
 }

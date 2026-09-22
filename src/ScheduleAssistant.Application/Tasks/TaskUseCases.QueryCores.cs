@@ -1,6 +1,7 @@
 using ScheduleAssistant.Application.Abstractions.Persistence;
 using ScheduleAssistant.Application.Calendar;
 using ScheduleAssistant.Application.Common;
+using ScheduleAssistant.Application.Recurrence;
 using ScheduleAssistant.Domain;
 
 namespace ScheduleAssistant.Application.Tasks;
@@ -15,6 +16,12 @@ public sealed partial class TaskUseCases
     {
         ArgumentNullException.ThrowIfNull(query);
         cancellationToken.ThrowIfCancellationRequested();
+        if (_recurrenceMaterializer is not null)
+        {
+            await _recurrenceMaterializer
+                .MaterializeAsync(query.Date, query.Date, cancellationToken)
+                .ConfigureAwait(false);
+        }
         var snapshot = CaptureQueryTime();
         var tasks = await _taskRepository
             .GetByRangeAsync(query.Date, query.Date, cancellationToken)
@@ -31,6 +38,12 @@ public sealed partial class TaskUseCases
         ArgumentNullException.ThrowIfNull(query);
         cancellationToken.ThrowIfCancellationRequested();
         var snapshot = CaptureQueryTime();
+        if (_recurrenceMaterializer is not null)
+        {
+            await _recurrenceMaterializer
+                .MaterializeAsync(snapshot.TodayLocal, snapshot.TodayLocal, cancellationToken)
+                .ConfigureAwait(false);
+        }
         var tasks = await _taskRepository
             .GetTodayPendingAsync(snapshot.TodayLocal, snapshot.NowUtc, cancellationToken)
             .ConfigureAwait(false);
@@ -48,6 +61,12 @@ public sealed partial class TaskUseCases
         var snapshot = CaptureQueryTime();
         var weekStart = StartOfWeek(query.Date);
         var weekEnd = weekStart.AddDays(6);
+        if (_recurrenceMaterializer is not null)
+        {
+            await _recurrenceMaterializer
+                .MaterializeAsync(weekStart, weekEnd, cancellationToken)
+                .ConfigureAwait(false);
+        }
         var tasks = await _taskRepository
             .GetByRangeAsync(weekStart, weekEnd, cancellationToken)
             .ConfigureAwait(false);
@@ -72,6 +91,12 @@ public sealed partial class TaskUseCases
         var month = new DateOnly(query.Date.Year, query.Date.Month, 1);
         var gridStart = StartOfWeek(month);
         var gridEnd = gridStart.AddDays(41);
+        if (_recurrenceMaterializer is not null)
+        {
+            await _recurrenceMaterializer
+                .MaterializeAsync(gridStart, gridEnd, cancellationToken)
+                .ConfigureAwait(false);
+        }
         var tasks = await _taskRepository
             .GetByRangeAsync(gridStart, gridEnd, cancellationToken)
             .ConfigureAwait(false);

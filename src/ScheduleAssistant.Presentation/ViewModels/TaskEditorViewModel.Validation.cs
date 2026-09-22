@@ -35,10 +35,10 @@ public sealed partial class TaskEditorViewModel
         SetBusy(true);
         try
         {
-            var result = IsCreateMode
+            var result = !_persistedTaskId.HasValue
                 ? await _taskUseCases.CreateAsync(new CreateTaskCommand(draft))
                 : await _taskUseCases.UpdateAsync(
-                    new UpdateTaskCommand(_request.TaskId!.Value, _expectedVersion, draft));
+                    new UpdateTaskCommand(_persistedTaskId.Value, _expectedVersion, draft));
 
             if (!result.IsSuccess || result.Value is null)
             {
@@ -46,6 +46,8 @@ public sealed partial class TaskEditorViewModel
                 return;
             }
 
+            _persistedTaskId = result.Value.Id;
+            _expectedVersion = result.Value.Version;
             _lastPostCommitEventStatus = result.PostCommitEventStatus;
             OnPropertyChanged(nameof(LastPostCommitEventStatus));
             OnPropertyChanged(nameof(RequiresRefresh));
@@ -59,6 +61,15 @@ public sealed partial class TaskEditorViewModel
             Saved?.Invoke(
                 this,
                 new TaskEditorSavedEventArgs(result.Value, result.PostCommitEventStatus));
+
+            var attachmentsImported = await ImportPendingAttachmentsAsync(result.Value.Id);
+            if (!attachmentsImported)
+            {
+                ErrorMessage = "任务已保存，但部分附件导入失败。请重试。";
+                NotifyCommandState();
+                return;
+            }
+
             _closeApproved = true;
             CloseRequested?.Invoke(this, EventArgs.Empty);
         }
@@ -97,6 +108,7 @@ public sealed partial class TaskEditorViewModel
             }
 
             ApplyTask(result.Value);
+            await LoadAttachmentsAsync(CancellationToken.None);
             _isDirty = false;
             _hasConflict = false;
             ClearErrors();

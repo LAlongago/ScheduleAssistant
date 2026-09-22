@@ -1,3 +1,4 @@
+using ScheduleAssistant.Application.Attachments;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Presentation.ViewModels;
 
@@ -13,6 +14,7 @@ public sealed class TaskEditorService : ITaskEditorService
     private readonly TaskDeadlineResolver _deadlineResolver;
     private readonly ITaskEditorInteractionService _interactionService;
     private readonly ITaskEditorWindowFactory _windowFactory;
+    private readonly IAttachmentUseCases? _attachmentUseCases;
 
     /// <summary>Initializes the reusable task-editor service.</summary>
     public TaskEditorService(
@@ -20,13 +22,15 @@ public sealed class TaskEditorService : ITaskEditorService
         TimeProvider timeProvider,
         TaskDeadlineResolver deadlineResolver,
         ITaskEditorInteractionService interactionService,
-        ITaskEditorWindowFactory windowFactory)
+        ITaskEditorWindowFactory windowFactory,
+        IAttachmentUseCases? attachmentUseCases = null)
     {
         _taskUseCases = taskUseCases ?? throw new ArgumentNullException(nameof(taskUseCases));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _deadlineResolver = deadlineResolver ?? throw new ArgumentNullException(nameof(deadlineResolver));
         _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
         _windowFactory = windowFactory ?? throw new ArgumentNullException(nameof(windowFactory));
+        _attachmentUseCases = attachmentUseCases;
     }
 
     /// <inheritdoc />
@@ -56,7 +60,8 @@ public sealed class TaskEditorService : ITaskEditorService
             _timeProvider,
             _interactionService,
             request,
-            _deadlineResolver);
+            _deadlineResolver,
+            attachmentUseCases: _attachmentUseCases);
     }
 
     private async Task OpenAsync(

@@ -1,3 +1,4 @@
+using ScheduleAssistant.Application.Recurrence;
 using ScheduleAssistant.Infrastructure.Persistence;
 
 namespace ScheduleAssistant.Presentation.Composition;
@@ -19,12 +20,15 @@ public sealed class DatabaseInitialization : IDatabaseInitialization
     private readonly Lazy<Task> _initialization;
 
     /// <summary>Initializes the one-shot database initialization gate.</summary>
-    public DatabaseInitialization(SqliteDatabaseInitializer initializer)
+    public DatabaseInitialization(
+        SqliteDatabaseInitializer initializer,
+        IRecurrenceMaterializer recurrenceMaterializer)
     {
         ArgumentNullException.ThrowIfNull(initializer);
+        ArgumentNullException.ThrowIfNull(recurrenceMaterializer);
         _initialization = new Lazy<Task>(
             () => Task.Run(
-                () => initializer.InitializeAsync(CancellationToken.None),
+                () => InitializeAndMaterializeAsync(initializer, recurrenceMaterializer),
                 CancellationToken.None),
             LazyThreadSafetyMode.ExecutionAndPublication);
     }
@@ -33,5 +37,13 @@ public sealed class DatabaseInitialization : IDatabaseInitialization
     public Task EnsureInitializedAsync(CancellationToken cancellationToken = default)
     {
         return _initialization.Value.WaitAsync(cancellationToken);
+    }
+
+    private static async Task InitializeAndMaterializeAsync(
+        SqliteDatabaseInitializer initializer,
+        IRecurrenceMaterializer recurrenceMaterializer)
+    {
+        await initializer.InitializeAsync(CancellationToken.None).ConfigureAwait(false);
+        await recurrenceMaterializer.MaterializeAsync(cancellationToken: CancellationToken.None).ConfigureAwait(false);
     }
 }

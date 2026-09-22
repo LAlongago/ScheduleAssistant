@@ -1,11 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using ScheduleAssistant.Application.Abstractions.Attachments;
 using ScheduleAssistant.Application.Abstractions.Configuration;
 using ScheduleAssistant.Application.Abstractions.Persistence;
 using ScheduleAssistant.Application.Abstractions.Settings;
 using ScheduleAssistant.Application;
 using ScheduleAssistant.Domain;
 using ScheduleAssistant.Infrastructure.Logging;
+using ScheduleAssistant.Infrastructure.FileSystem;
 using ScheduleAssistant.Infrastructure.Persistence;
 using ScheduleAssistant.Infrastructure.Persistence.Repositories;
 using ScheduleAssistant.Infrastructure.Settings;
@@ -48,12 +50,27 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<SqliteCategoryRepository>();
         services.AddSingleton<ICategoryRepository>(serviceProvider =>
             new PersistenceMappingCategoryRepository(serviceProvider.GetRequiredService<SqliteCategoryRepository>()));
-        services.AddSingleton<IRecurrenceSeriesRepository, SqliteRecurrenceSeriesRepository>();
+        services.AddSingleton<SqliteRecurrenceSeriesRepository>();
+        services.AddSingleton<IRecurrenceSeriesRepository>(serviceProvider =>
+            new PersistenceMappingRecurrenceSeriesRepository(
+                serviceProvider.GetRequiredService<SqliteRecurrenceSeriesRepository>()));
         services.AddSingleton<SqliteReminderRepository>();
         services.AddSingleton<IReminderRepository>(serviceProvider =>
             new PersistenceMappingReminderRepository(serviceProvider.GetRequiredService<SqliteReminderRepository>()));
-        services.AddSingleton<IAttachmentRepository, SqliteAttachmentRepository>();
-        services.AddSingleton<IRecurrenceExclusionRepository, SqliteRecurrenceExclusionRepository>();
+        services.AddSingleton<SqliteAttachmentRepository>();
+        services.AddSingleton<IAttachmentRepository>(serviceProvider =>
+            new PersistenceMappingAttachmentRepository(serviceProvider.GetRequiredService<SqliteAttachmentRepository>()));
+        services.AddSingleton<SqliteAttachmentCleanupQueue>();
+        services.AddSingleton<IAttachmentCleanupQueue>(serviceProvider =>
+            serviceProvider.GetRequiredService<SqliteAttachmentCleanupQueue>());
+        services.AddSingleton<IAttachmentStore, ManagedAttachmentStore>();
+        services.AddSingleton<SqliteRecurrenceExclusionRepository>();
+        services.AddSingleton<IRecurrenceExclusionRepository>(serviceProvider =>
+            new PersistenceMappingRecurrenceExclusionRepository(
+                serviceProvider.GetRequiredService<SqliteRecurrenceExclusionRepository>()));
+        services.AddSingleton<IRecurrenceTaskRepository>(serviceProvider =>
+            new PersistenceMappingRecurrenceTaskRepository(
+                serviceProvider.GetRequiredService<SqliteTaskRepository>()));
 
         return services;
     }

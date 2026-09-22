@@ -13,11 +13,25 @@ public interface IRecurrenceExclusionRepository
         DateOnly rangeEnd,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Reads exclusions through a caller-owned transaction.</summary>
+    Task<IReadOnlyList<RecurrenceExclusion>> GetBySeriesAndRangeAsync(
+        Guid seriesId,
+        DateOnly rangeStart,
+        DateOnly rangeEnd,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Adds an occurrence exclusion.</summary>
     Task AddAsync(RecurrenceExclusion exclusion, CancellationToken cancellationToken = default);
 
     /// <summary>Adds an occurrence exclusion in an existing transaction.</summary>
     Task AddAsync(RecurrenceExclusion exclusion, IPersistenceTransaction transaction, CancellationToken cancellationToken = default);
+
+    /// <summary>Adds an exclusion if it does not already exist in an existing transaction.</summary>
+    Task<bool> AddIfAbsentAsync(
+        RecurrenceExclusion exclusion,
+        IPersistenceTransaction transaction,
+        CancellationToken cancellationToken = default);
 
     /// <summary>Removes an occurrence exclusion.</summary>
     Task DeleteAsync(Guid seriesId, DateOnly occurrenceDate, CancellationToken cancellationToken = default);
