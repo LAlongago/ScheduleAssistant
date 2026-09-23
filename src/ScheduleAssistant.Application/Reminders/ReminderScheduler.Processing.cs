@@ -137,6 +137,11 @@ public sealed partial class ReminderScheduler
         }
         else
         {
+            if (!await EnsureNotificationProviderAvailableAsync("delivery failure recheck", cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
             var errorCode = delivery.ErrorCode ?? NotificationExceptionCode;
             reminder.MarkFailed(errorCode);
             _logger.LogWarning(

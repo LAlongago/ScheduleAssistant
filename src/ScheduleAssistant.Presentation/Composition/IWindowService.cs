@@ -5,4 +5,7 @@ public interface IWindowService
 {
     /// <summary>Shows the already-constructed main window.</summary>
     void ShowMainWindow(MainWindow mainWindow);
+
+    /// <summary>Restores and activates the main window if it is currently hidden or minimized.</summary>
+    void ActivateMainWindow();
 }
