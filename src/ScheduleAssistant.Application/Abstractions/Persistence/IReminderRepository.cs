@@ -19,6 +19,10 @@ public interface IReminderRepository
 
     /// <summary>Gets the earliest pending reminder, if one exists.</summary>
     Task<Reminder?> GetNextPendingAsync(CancellationToken cancellationToken = default);
+    /// <summary>Gets pending reminders scheduled at or before the supplied UTC instant, in schedule order.</summary>
+    Task<IReadOnlyList<Reminder>> GetPendingDueAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken = default);
 
     /// <summary>Inserts a reminder.</summary>
     Task AddAsync(Reminder reminder, CancellationToken cancellationToken = default);

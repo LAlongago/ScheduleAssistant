@@ -78,6 +78,23 @@ public sealed class SqliteReminderRepository : SqliteRepositoryBase, IReminderRe
     }
 
     /// <inheritdoc />
+    public async Task<IReadOnlyList<Reminder>> GetPendingDueAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken = default)
+    {
+        await using var connection = await _connectionFactory.CreateOpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+        var rows = await connection.QueryAsync<ReminderRow>(new CommandDefinition(
+            $"SELECT {Columns} FROM reminders WHERE status = @Status AND scheduled_at_utc <= @NowUtc ORDER BY scheduled_at_utc, id;",
+            new
+            {
+                Status = (int)ReminderStatus.Pending,
+                NowUtc = SqliteValueConverter.ToUtc(nowUtc.ToUniversalTime())
+            },
+            cancellationToken: cancellationToken)).ConfigureAwait(false);
+        return rows.Select(Map).ToArray();
+    }
+
+    /// <inheritdoc />
     public Task AddAsync(Reminder reminder, CancellationToken cancellationToken = default)
     {
         return InTransactionAsync(transaction => AddCoreAsync(reminder, transaction, cancellationToken), cancellationToken);

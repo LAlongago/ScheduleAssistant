@@ -220,6 +220,13 @@ internal sealed class PersistenceMappingReminderRepository : IReminderRepository
     public Task<Reminder?> GetNextPendingAsync(CancellationToken cancellationToken = default) =>
         PersistenceExceptionMapper.ExecuteAsync("Reminder.GetNextPending", () => _inner.GetNextPendingAsync(cancellationToken));
 
+    public Task<IReadOnlyList<Reminder>> GetPendingDueAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken = default) =>
+        PersistenceExceptionMapper.ExecuteAsync(
+            "Reminder.GetPendingDue",
+            () => _inner.GetPendingDueAsync(nowUtc, cancellationToken));
+
     public Task AddAsync(Reminder reminder, CancellationToken cancellationToken = default) =>
         PersistenceExceptionMapper.ExecuteAsync("Reminder.Add", () => _inner.AddAsync(reminder, cancellationToken));
 
