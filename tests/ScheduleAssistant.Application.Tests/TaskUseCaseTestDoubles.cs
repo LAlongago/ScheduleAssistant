@@ -583,6 +583,17 @@ internal sealed class InMemoryReminderRepository : IReminderRepository
     public Task<Reminder?> GetNextPendingAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult<Reminder?>(_store.Reminders.Values.SelectMany(items => items).Where(r => r.Status == ReminderStatus.Pending).OrderBy(r => r.ScheduledAtUtc).Select(TaskUseCaseTestContext.Clone).FirstOrDefault());
 
+    public Task<IReadOnlyList<Reminder>> GetPendingDueAsync(
+        DateTimeOffset nowUtc,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<Reminder>>(_store.Reminders.Values
+            .SelectMany(items => items)
+            .Where(reminder => reminder.Status == ReminderStatus.Pending && reminder.ScheduledAtUtc <= nowUtc)
+            .OrderBy(reminder => reminder.ScheduledAtUtc)
+            .ThenBy(reminder => reminder.Id)
+            .Select(TaskUseCaseTestContext.Clone)
+            .ToArray());
+
     public Task AddAsync(Reminder reminder, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
     public Task AddAsync(Reminder reminder, IPersistenceTransaction transaction, CancellationToken cancellationToken = default)
@@ -603,7 +614,22 @@ internal sealed class InMemoryReminderRepository : IReminderRepository
         return Task.CompletedTask;
     }
 
-    public Task UpdateAsync(Reminder reminder, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+    public Task UpdateAsync(Reminder reminder, CancellationToken cancellationToken = default)
+    {
+        if (!_store.Reminders.TryGetValue(reminder.TaskId, out var reminders))
+        {
+            throw new KeyNotFoundException($"Reminder '{reminder.Id}' was not found.");
+        }
+
+        var index = reminders.FindIndex(existing => existing.Id == reminder.Id);
+        if (index < 0)
+        {
+            throw new KeyNotFoundException($"Reminder '{reminder.Id}' was not found.");
+        }
+
+        reminders[index] = TaskUseCaseTestContext.Clone(reminder);
+        return Task.CompletedTask;
+    }
 
     public Task UpdateAsync(Reminder reminder, IPersistenceTransaction transaction, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 
