@@ -1,10 +1,15 @@
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Data.Sqlite;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using ScheduleAssistant.Application.Abstractions.Events;
+using ScheduleAssistant.Application.Abstractions.Persistence;
+using ScheduleAssistant.Application.Reminders;
+using ScheduleAssistant.Domain;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Infrastructure.Composition;
 using ScheduleAssistant.Presentation;
@@ -17,6 +22,135 @@ namespace ScheduleAssistant.Presentation.Tests;
 
 public sealed class CompositionRegistrationTests
 {
+    [Fact]
+    public void AddPresentation_WhenHostedServicesResolve_ShouldInitializeThenMaintainThenStartReminderScheduler()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), "ScheduleAssistant-DEV080-startup-order-" + Guid.NewGuid().ToString("N"));
+        using var provider = new ServiceCollection()
+            .AddLogging()
+            .AddInfrastructure(rootDirectory)
+            .AddPresentation()
+            .BuildServiceProvider();
+
+        var hostedServiceTypes = provider.GetServices<IHostedService>()
+            .Select(service => service.GetType())
+            .ToArray();
+
+        Assert.Equal(
+            new[]
+            {
+                typeof(DatabaseInitializationHostedService),
+                typeof(AttachmentMaintenanceHostedService),
+                typeof(ReminderSchedulerHostedService)
+            },
+            hostedServiceTypes);
+    }
+
+    [Fact]
+    public async Task AddPresentation_WhenNotificationAdapterIsNotConfigured_ShouldRegisterUnavailableProvider()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), "ScheduleAssistant-DEV080-notifications-" + Guid.NewGuid().ToString("N"));
+        using var provider = new ServiceCollection()
+            .AddInfrastructure(rootDirectory)
+            .AddPresentation()
+            .BuildServiceProvider();
+
+        var capability = await provider.GetRequiredService<INotificationService>().GetCapabilityAsync();
+
+        Assert.False(capability.IsAvailable);
+        Assert.Equal("notification.adapter-not-configured", capability.ErrorCode);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenCompositionRootHasNoNotificationAdapter_ShouldPreserveDueReminderAndNotCreateTimer()
+    {
+        var rootDirectory = Path.Combine(Path.GetTempPath(), "ScheduleAssistant-DEV080-pending-reminder-" + Guid.NewGuid().ToString("N"));
+        var timerFactory = new CountingOneShotTimerFactory();
+        try
+        {
+            using var provider = new ServiceCollection()
+                .AddLogging()
+                .AddInfrastructure(rootDirectory)
+                .AddPresentation()
+                .AddSingleton<IOneShotTimerFactory>(timerFactory)
+                .BuildServiceProvider();
+
+            await provider.GetRequiredService<IDatabaseInitialization>().EnsureInitializedAsync();
+
+            var nowUtc = DateTimeOffset.UtcNow;
+            var deadlineUtc = nowUtc.AddDays(3);
+            var deadlineLocal = deadlineUtc.UtcDateTime;
+            var deadline = ZonedDeadline.CreateResolvedUtc(
+                DateOnly.FromDateTime(deadlineLocal),
+                TimeOnly.FromDateTime(deadlineLocal),
+                "UTC",
+                deadlineUtc);
+            var categories = await provider.GetRequiredService<ICategoryRepository>().GetAllAsync();
+            Assert.NotEmpty(categories);
+            var category = categories[0];
+            var task = TaskItem.Create(
+                Guid.NewGuid(),
+                "Startup reminder regression",
+                category.Id,
+                TaskPriority.Normal,
+                nowUtc,
+                deadline: deadline);
+            await provider.GetRequiredService<ITaskRepository>().AddAsync(task);
+
+            var reminder = Reminder.Create(
+                Guid.NewGuid(),
+                task.Id,
+                -1440,
+                nowUtc.AddDays(-2),
+                "integration-011-unavailable-provider");
+            var reminderRepository = provider.GetRequiredService<IReminderRepository>();
+            await reminderRepository.AddAsync(reminder);
+
+            var schedulerHostedService = provider.GetServices<IHostedService>()
+                .OfType<ReminderSchedulerHostedService>()
+                .Single();
+            await schedulerHostedService.StartAsync(CancellationToken.None);
+
+            var persisted = await reminderRepository.GetByIdAsync(reminder.Id);
+            Assert.Equal(ReminderStatus.Pending, persisted!.Status);
+            Assert.Equal(0, timerFactory.CreateCount);
+
+            await schedulerHostedService.StopAsync(CancellationToken.None);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            if (Directory.Exists(rootDirectory))
+            {
+                Directory.Delete(rootDirectory, recursive: true);
+            }
+        }
+    }
+
+    private sealed class CountingOneShotTimerFactory : IOneShotTimerFactory
+    {
+        public int CreateCount { get; private set; }
+
+        public IOneShotTimer Create(Func<Task> callback)
+        {
+            CreateCount++;
+            return new UnusedOneShotTimer();
+        }
+    }
+
+    private sealed class UnusedOneShotTimer : IOneShotTimer
+    {
+        public void Schedule(TimeSpan delay) => throw new InvalidOperationException("No timer should be scheduled.");
+
+        public void CancelScheduledCallback()
+        {
+        }
+
+        public void Dispose()
+        {
+        }
+    }
+
     [Fact]
     public void AddPresentation_WhenResolvingApplicationPorts_ShouldUseOneTaskUseCasesAndEventBusInstance()
     {

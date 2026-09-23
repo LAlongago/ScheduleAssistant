@@ -34,6 +34,7 @@ public sealed partial class ReminderScheduler : IReminderScheduler
     private bool _started;
     private bool _paused;
     private bool _stopped;
+    private bool _notificationProviderUnavailable;
 
     /// <summary>Creates a scheduler over the existing task and reminder persistence ports.</summary>
     public ReminderScheduler(
@@ -65,6 +66,11 @@ public sealed partial class ReminderScheduler : IReminderScheduler
 
             _started = true;
             _paused = false;
+            if (!await EnsureNotificationProviderAvailableAsync("startup", cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
             if (!EnsureTimer())
             {
                 return;
@@ -84,8 +90,21 @@ public sealed partial class ReminderScheduler : IReminderScheduler
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (!_started || _paused || _stopped || !EnsureTimer())
+            if (!_started || _paused || _stopped)
             {
+                return;
+            }
+
+            var providerWasUnavailable = _notificationProviderUnavailable;
+            if (!await EnsureNotificationProviderAvailableAsync("event reschedule", cancellationToken).ConfigureAwait(false)
+                || !EnsureTimer())
+            {
+                return;
+            }
+
+            if (providerWasUnavailable)
+            {
+                await CompensateAndScheduleAsync("notification provider recovery", cancellationToken).ConfigureAwait(false);
                 return;
             }
 
@@ -125,6 +144,11 @@ public sealed partial class ReminderScheduler : IReminderScheduler
 
             _paused = false;
             _started = true;
+            if (!await EnsureNotificationProviderAvailableAsync("resume", cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
             if (!EnsureTimer())
             {
                 return;
@@ -180,6 +204,12 @@ public sealed partial class ReminderScheduler : IReminderScheduler
                 operation + " compensation",
                 () => CompensateDueRemindersAsync(cancellationToken),
                 cancellationToken).ConfigureAwait(false))
+        {
+            _timer?.CancelScheduledCallback();
+            return;
+        }
+
+        if (_notificationProviderUnavailable)
         {
             _timer?.CancelScheduledCallback();
             return;

@@ -17,7 +17,7 @@ The Presentation composition root resolves one `TaskUseCases` instance as both `
 `ITaskQueries`, and one `InProcessEventBus` as `IApplicationEventPublisher`. SQLite initialization is
 gated once before query pages run.
 
-## Current running interface (INTEGRATION-010 + DEV-043 + DEV-044 + DEV-045 + DEV-046 + DEV-047 + DEV-060 + DEV-070)
+## Current running interface (INTEGRATION-011 + DEV-043 + DEV-044 + DEV-045 + DEV-046 + DEV-047 + DEV-060 + DEV-061 + DEV-070 + DEV-080)
 
 The WPF application starts with a single three-part shell: a fixed left navigation rail, a header with
 the current page title/date controls/search/new-task entry points, and the active page content region.
@@ -44,12 +44,14 @@ Available now:
 - Today grouping for overdue, planned-past, today plans, today-only Deadlines, and completed tasks;
 - cached Deadline countdowns, upcoming-page range filtering capped at 7 days (24 hours/3 days/7 days), task completion and
   cancellation, and event-driven local refresh of Today and Upcoming Deadlines.
+- persistent reminder scheduling with a one-shot timer; while the production Windows notification provider is absent,
+  the scheduler remains asleep and leaves due Pending reminders unchanged.
 
 Still intentionally placeholder-only:
 
 - Week and Month calendar pages;
 - All Tasks and search filtering;
-- notifications, tray, startup, desktop mode, backup, and other later Windows integration work.
+- the production Windows notification provider (DEV-081), tray, startup, desktop mode, backup, and other later Windows integration work.
 
 The placeholder pages do not query or write fake task data. Light and alternate Dark resource dictionaries
 centralize color, typography, spacing, radius, border, focus, and state tokens.

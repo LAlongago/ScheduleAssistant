@@ -83,6 +83,43 @@ public sealed class ReminderSchedulerTests
     }
 
     [Fact]
+    public async Task StartAsync_WhenNotificationProviderIsUnavailable_ShouldPreserveDueReminderAndSleepWithoutPolling()
+    {
+        await using var context = new ReminderSchedulerTestContext();
+        var task = context.AddTask();
+        var reminder = context.AddReminder(task.Id, context.TimeProvider.GetUtcNow().AddDays(-2));
+        context.NotificationService.IsAvailable = false;
+
+        await context.Scheduler.StartAsync();
+
+        var persisted = await context.ReminderRepository.GetByIdAsync(reminder.Id);
+        Assert.Equal(ReminderStatus.Pending, persisted!.Status);
+        Assert.Empty(context.NotificationService.Attempts);
+        Assert.Equal(1, context.NotificationService.CapabilityCheckCount);
+        Assert.Equal(0, context.ReminderRepository.PendingDueQueryCount);
+        Assert.Equal(0, context.TimerFactory.CreateCount);
+    }
+
+    [Fact]
+    public async Task ResumeAsync_WhenNotificationProviderBecomesAvailable_ShouldCompensatePendingReminder()
+    {
+        await using var context = new ReminderSchedulerTestContext();
+        var task = context.AddTask();
+        var reminder = context.AddReminder(task.Id, context.TimeProvider.GetUtcNow().AddHours(-1));
+        context.NotificationService.IsAvailable = false;
+
+        await context.Scheduler.StartAsync();
+        context.NotificationService.IsAvailable = true;
+
+        await context.Scheduler.ResumeAsync();
+
+        var persisted = await context.ReminderRepository.GetByIdAsync(reminder.Id);
+        Assert.Equal(ReminderStatus.Delivered, persisted!.Status);
+        Assert.Single(context.NotificationService.Attempts);
+        Assert.True(context.TimerFactory.CreateCount > 0);
+    }
+
+    [Fact]
     public async Task StartAsync_WhenTaskIsCompletedOrMissing_ShouldCancelWithoutNotification()
     {
         await using var context = new ReminderSchedulerTestContext();
@@ -253,8 +290,11 @@ public sealed class ReminderSchedulerTests
     {
         public ManualOneShotTimer? Timer { get; private set; }
 
+        public int CreateCount { get; private set; }
+
         public IOneShotTimer Create(Func<Task> callback)
         {
+            CreateCount++;
             Timer = new ManualOneShotTimer(callback);
             return Timer;
         }
@@ -271,7 +311,13 @@ public sealed class ReminderSchedulerTests
 
         public TimeSpan? ScheduledDelay { get; private set; }
 
-        public void Schedule(TimeSpan delay) => ScheduledDelay = delay;
+        public int ScheduleCount { get; private set; }
+
+        public void Schedule(TimeSpan delay)
+        {
+            ScheduleCount++;
+            ScheduledDelay = delay;
+        }
 
         public void CancelScheduledCallback() => ScheduledDelay = null;
 
@@ -288,9 +334,24 @@ public sealed class ReminderSchedulerTests
     {
         public List<ReminderNotification> Attempts { get; } = new();
 
+        public bool IsAvailable { get; set; } = true;
+
+        public int CapabilityCheckCount { get; private set; }
+
         public NotificationDeliveryResult? Result { get; set; }
 
         public Exception? ExceptionToThrow { get; set; }
+
+        public Task<NotificationProviderCapability> GetCapabilityAsync(
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            CapabilityCheckCount++;
+            var result = IsAvailable
+                ? NotificationProviderCapability.Available()
+                : NotificationProviderCapability.Unavailable("notification.test-unavailable");
+            return Task.FromResult(result);
+        }
 
         public Task<NotificationDeliveryResult> ShowAsync(
             ReminderNotification notification,

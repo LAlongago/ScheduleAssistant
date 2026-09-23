@@ -48,10 +48,28 @@ public sealed partial class ReminderScheduler
                 return;
             }
 
+            var providerWasUnavailable = _notificationProviderUnavailable;
+            if (!await EnsureNotificationProviderAvailableAsync("timer", CancellationToken.None).ConfigureAwait(false))
+            {
+                return;
+            }
+
+            if (providerWasUnavailable)
+            {
+                await CompensateAndScheduleAsync("notification provider recovery", CancellationToken.None).ConfigureAwait(false);
+                return;
+            }
+
             if (!await TryRunAsync(
                     "timer delivery",
                     () => ProcessNextPendingReminderAsync(CancellationToken.None),
                     CancellationToken.None).ConfigureAwait(false))
+            {
+                _timer?.CancelScheduledCallback();
+                return;
+            }
+
+            if (_notificationProviderUnavailable)
             {
                 _timer?.CancelScheduledCallback();
                 return;

@@ -568,6 +568,8 @@ internal sealed class InMemoryReminderRepository : IReminderRepository
         _store = store;
     }
 
+    public int PendingDueQueryCount { get; private set; }
+
     public Task<Reminder?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         Task.FromResult(_store.Reminders.Values.SelectMany(items => items).FirstOrDefault(r => r.Id == id) is { } reminder ? TaskUseCaseTestContext.Clone(reminder) : null);
 
@@ -585,14 +587,17 @@ internal sealed class InMemoryReminderRepository : IReminderRepository
 
     public Task<IReadOnlyList<Reminder>> GetPendingDueAsync(
         DateTimeOffset nowUtc,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<Reminder>>(_store.Reminders.Values
+        CancellationToken cancellationToken = default)
+    {
+        PendingDueQueryCount++;
+        return Task.FromResult<IReadOnlyList<Reminder>>(_store.Reminders.Values
             .SelectMany(items => items)
             .Where(reminder => reminder.Status == ReminderStatus.Pending && reminder.ScheduledAtUtc <= nowUtc)
             .OrderBy(reminder => reminder.ScheduledAtUtc)
             .ThenBy(reminder => reminder.Id)
             .Select(TaskUseCaseTestContext.Clone)
             .ToArray());
+    }
 
     public Task AddAsync(Reminder reminder, CancellationToken cancellationToken = default) => throw new NotSupportedException();
 

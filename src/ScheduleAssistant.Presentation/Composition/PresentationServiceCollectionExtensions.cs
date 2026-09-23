@@ -49,8 +49,8 @@ public static class PresentationServiceCollectionExtensions
         services.AddSingleton<AttachmentMaintenanceService>();
         services.AddSingleton<IDatabaseInitialization, DatabaseInitialization>();
         services.AddHostedService<DatabaseInitializationHostedService>();
-        services.AddHostedService<ReminderSchedulerHostedService>();
         services.AddHostedService<AttachmentMaintenanceHostedService>();
+        services.AddHostedService<ReminderSchedulerHostedService>();
         services.AddSingleton<IUiDispatcher>(_ => new WpfUiDispatcher(Dispatcher.CurrentDispatcher));
         services.AddSingleton<IDeadlineRefreshTimer, DeadlineRefreshTimer>();
         services.AddSingleton<ITaskCardMapper, TaskCardMapper>();

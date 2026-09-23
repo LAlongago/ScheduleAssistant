@@ -44,9 +44,36 @@ public sealed record NotificationDeliveryResult
     }
 }
 
+/// <summary>Describes whether a real notification provider can currently accept deliveries.</summary>
+public sealed record NotificationProviderCapability(bool IsAvailable, string? ErrorCode)
+{
+    /// <summary>Creates a capability result for an available provider.</summary>
+    public static NotificationProviderCapability Available() => new(true, null);
+
+    /// <summary>Creates a capability result for a provider that cannot currently deliver.</summary>
+    public static NotificationProviderCapability Unavailable(string errorCode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(errorCode);
+        var normalized = errorCode.Trim();
+        if (normalized.Length > 200)
+        {
+            throw new ArgumentOutOfRangeException(nameof(errorCode), "Notification error codes are limited to 200 characters.");
+        }
+
+        return new NotificationProviderCapability(false, normalized);
+    }
+}
+
 /// <summary>Shows a task reminder through a replaceable notification adapter.</summary>
 public interface INotificationService
 {
+    /// <summary>
+    /// Checks whether a configured notification provider is ready before the scheduler changes reminder state.
+    /// An unavailable result means pending reminders must remain untouched until a later check succeeds.
+    /// </summary>
+    Task<NotificationProviderCapability> GetCapabilityAsync(
+        CancellationToken cancellationToken = default);
+
     /// <summary>Shows one notification and returns a provider-neutral delivery result.</summary>
     Task<NotificationDeliveryResult> ShowAsync(
         ReminderNotification notification,

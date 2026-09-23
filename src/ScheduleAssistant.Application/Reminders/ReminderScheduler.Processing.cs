@@ -8,6 +8,46 @@ public sealed partial class ReminderScheduler
     private static readonly TimeSpan CompensationWindow = TimeSpan.FromHours(24);
     private const string NotificationExceptionCode = "notification.delivery-failed";
 
+    private async Task<bool> EnsureNotificationProviderAvailableAsync(
+        string operation,
+        CancellationToken cancellationToken)
+    {
+        NotificationProviderCapability capability;
+        try
+        {
+            capability = await _notificationService
+                .GetCapabilityAsync(cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            _notificationProviderUnavailable = true;
+            _timer?.CancelScheduledCallback();
+            _logger.LogWarning(
+                "Reminder scheduling is sleeping because notification capability check {Operation} failed with exception type {ExceptionType}.",
+                operation,
+                exception.GetType().Name);
+            return false;
+        }
+
+        if (capability is null || !capability.IsAvailable)
+        {
+            _notificationProviderUnavailable = true;
+            _timer?.CancelScheduledCallback();
+            _logger.LogWarning(
+                "Reminder scheduling is sleeping because the notification provider is unavailable; error code {ErrorCode}.",
+                capability?.ErrorCode ?? "notification.capability-unavailable");
+            return false;
+        }
+
+        _notificationProviderUnavailable = false;
+        return true;
+    }
+
     private async Task CompensateDueRemindersAsync(CancellationToken cancellationToken)
     {
         var nowUtc = _timeProvider.GetUtcNow().ToUniversalTime();
@@ -19,6 +59,10 @@ public sealed partial class ReminderScheduler
         {
             cancellationToken.ThrowIfCancellationRequested();
             await ProcessReminderAsync(reminder.Id, cancellationToken).ConfigureAwait(false);
+            if (_notificationProviderUnavailable)
+            {
+                return;
+            }
         }
     }
 
@@ -35,6 +79,11 @@ public sealed partial class ReminderScheduler
 
     private async Task ProcessReminderAsync(Guid reminderId, CancellationToken cancellationToken)
     {
+        if (!await EnsureNotificationProviderAvailableAsync("reminder processing", cancellationToken).ConfigureAwait(false))
+        {
+            return;
+        }
+
         var reminder = await _reminderRepository.GetByIdAsync(reminderId, cancellationToken).ConfigureAwait(false);
         if (reminder is null || reminder.Status != ReminderStatus.Pending)
         {
