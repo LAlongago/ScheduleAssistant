@@ -29,4 +29,7 @@ public interface ITaskEditorInteractionService
 
     /// <summary>Confirms removal of one attachment.</summary>
     bool ConfirmRemoveAttachment(string displayName);
+
+    /// <summary>Confirms a recurrence update or deletion with its explicitly selected date scope.</summary>
+    bool ConfirmRecurrenceOperation(string title, string message, string confirmLabel);
 }

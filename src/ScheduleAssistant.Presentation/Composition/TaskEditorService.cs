@@ -1,4 +1,5 @@
 using ScheduleAssistant.Application.Attachments;
+using ScheduleAssistant.Application.Recurrence;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Presentation.ViewModels;
 
@@ -15,6 +16,7 @@ public sealed class TaskEditorService : ITaskEditorService
     private readonly ITaskEditorInteractionService _interactionService;
     private readonly ITaskEditorWindowFactory _windowFactory;
     private readonly IAttachmentUseCases? _attachmentUseCases;
+    private readonly IRecurrenceUseCases? _recurrenceUseCases;
 
     /// <summary>Initializes the reusable task-editor service.</summary>
     public TaskEditorService(
@@ -23,7 +25,8 @@ public sealed class TaskEditorService : ITaskEditorService
         TaskDeadlineResolver deadlineResolver,
         ITaskEditorInteractionService interactionService,
         ITaskEditorWindowFactory windowFactory,
-        IAttachmentUseCases? attachmentUseCases = null)
+        IAttachmentUseCases? attachmentUseCases = null,
+        IRecurrenceUseCases? recurrenceUseCases = null)
     {
         _taskUseCases = taskUseCases ?? throw new ArgumentNullException(nameof(taskUseCases));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
@@ -31,6 +34,7 @@ public sealed class TaskEditorService : ITaskEditorService
         _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
         _windowFactory = windowFactory ?? throw new ArgumentNullException(nameof(windowFactory));
         _attachmentUseCases = attachmentUseCases;
+        _recurrenceUseCases = recurrenceUseCases;
     }
 
     /// <inheritdoc />
@@ -61,7 +65,8 @@ public sealed class TaskEditorService : ITaskEditorService
             _interactionService,
             request,
             _deadlineResolver,
-            attachmentUseCases: _attachmentUseCases);
+            attachmentUseCases: _attachmentUseCases,
+            recurrenceUseCases: _recurrenceUseCases);
     }
 
     private async Task OpenAsync(

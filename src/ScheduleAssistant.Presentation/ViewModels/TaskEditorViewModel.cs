@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ScheduleAssistant.Application.Attachments;
 using ScheduleAssistant.Application.Common;
+using ScheduleAssistant.Application.Recurrence;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Presentation.Composition;
 
@@ -75,7 +76,6 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     private bool _deadlineWarningAcknowledged;
     private bool _reminderPlanTouched;
     private readonly bool _attachmentsEnabled;
-    private readonly bool _recurrenceEnabled;
     private DateTimeOffset? _confirmedDeadlineUtc;
     private long _expectedVersion;
     private Guid? _persistedTaskId;
@@ -107,16 +107,17 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         TaskEditorRequest request,
         TaskDeadlineResolver? deadlineResolver = null,
         string? localTimeZoneId = null,
-        IAttachmentUseCases? attachmentUseCases = null)
+        IAttachmentUseCases? attachmentUseCases = null,
+        IRecurrenceUseCases? recurrenceUseCases = null)
     {
         _taskUseCases = taskUseCases ?? throw new ArgumentNullException(nameof(taskUseCases));
         _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
         _interactionService = interactionService ?? throw new ArgumentNullException(nameof(interactionService));
         _request = request ?? throw new ArgumentNullException(nameof(request));
         _attachmentUseCases = attachmentUseCases;
+        _recurrenceUseCases = recurrenceUseCases;
         _deadlineResolver = deadlineResolver ?? new TaskDeadlineResolver();
         _attachmentsEnabled = attachmentUseCases is not null;
-        _recurrenceEnabled = false;
         _timeZoneId = string.IsNullOrWhiteSpace(localTimeZoneId)
             ? TimeZoneInfo.Local.Id
             : localTimeZoneId.Trim();
@@ -139,6 +140,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         ReloadCommand = new AsyncRelayCommand(ReloadAsync, () => CanReload);
         CancelCommand = new RelayCommand(RequestCancel);
         InitializeAttachmentState();
+        InitializeRecurrenceState();
     }
 
     /// <summary>Raised when the editor has committed and should be closed.</summary>
@@ -157,7 +159,13 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     public bool IsEditMode => Mode == TaskEditorMode.Edit;
 
     /// <summary>Gets the title shown in the editor window.</summary>
-    public string WindowTitle => IsCreateMode ? "新建任务" : "编辑任务";
+    public string WindowTitle => _isEditingRecurrenceSeries
+        ? "编辑周期系列"
+        : IsRecurringCreationMode
+            ? "新建周期任务"
+            : IsRecurrenceOccurrence
+                ? "编辑周期实例"
+                : IsCreateMode ? "新建任务" : "编辑任务";
 
     /// <summary>Gets whether initial Application data has been loaded.</summary>
     public bool IsInitialized => _isInitialized;
@@ -198,7 +206,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     public bool HasConflict => _hasConflict;
 
     /// <summary>Gets whether the save command can execute.</summary>
-    public bool CanSave => IsInitialized && !IsBusy && !HasConflict;
+    public bool CanSave => IsInitialized && !IsBusy && !HasConflict && !_recurrenceOperationCommitted;
 
     /// <summary>Gets whether the reload command can execute.</summary>
     public bool CanReload => IsEditMode && IsInitialized && !IsBusy && HasConflict;
@@ -388,18 +396,15 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
     /// <summary>Gets whether attachment persistence is available in this task package.</summary>
     public bool IsAttachmentsEnabled => _attachmentsEnabled;
 
+    /// <summary>Gets whether attachment actions are available in the current editing scope.</summary>
+    public bool CanManageAttachments => IsAttachmentsEnabled && !IsRecurrenceConfigurationMode;
+
     /// <summary>Explains the attachment area or the unavailable optional port.</summary>
-    public string AttachmentsPlaceholder => IsAttachmentsEnabled
-        ? "源文件不会被删除；保存任务后将逐个复制到应用管理目录。"
-        : "附件功能保留为占位；DEV-070 接入后才会保存受管副本。";
-
-    /// <summary>Gets whether recurrence persistence is available in this task package.</summary>
-    public bool IsRecurrenceEnabled => _recurrenceEnabled;
-
-    /// <summary>Explains the honest recurrence placeholder without pretending to save rules.</summary>
-    public string RecurrencePlaceholder => _request.Mode == TaskEditorMode.Create
-        ? "周期功能保留为占位；DEV-061 接入后才会保存周期规则。"
-        : "周期功能保留为占位；DEV-061 接入后才会保存周期规则。";
+    public string AttachmentsPlaceholder => IsRecurrenceConfigurationMode
+        ? "周期系列不保存附件。当前实例的附件只属于该实例；系列更新替换未完成实例时，其附件管理副本也会随原任务删除。"
+        : IsAttachmentsEnabled
+            ? "源文件不会被删除；保存任务后将逐个复制到应用管理目录。"
+            : "附件功能保留为占位；DEV-070 接入后才会保存受管副本。";
 
     /// <summary>Gets the UI validation summary.</summary>
     public IReadOnlyList<string> ValidationMessages => _errors.Values.SelectMany(messages => messages).ToArray();
@@ -460,6 +465,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
                 }
 
                 ApplyTask(taskResult.Value);
+                await LoadRecurrenceSeriesForTaskAsync(cancellationToken).ConfigureAwait(true);
             }
             else
             {
@@ -574,6 +580,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
             _reminderPlanTouched = true;
         }
 
+        NotifyRecurrenceInputChanged(propertyName);
         ValidateForm();
         NotifyCommandState();
         OnPropertyChanged(nameof(IsDirty));
@@ -594,6 +601,8 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
         OnPropertyChanged(nameof(CanReload));
         SaveCommand.NotifyCanExecuteChanged();
         ReloadCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanCreateRecurrenceSeries));
+        NotifyRecurrenceCommandState();
         NotifyAttachmentCommandState();
     }
 
@@ -629,6 +638,7 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
 
     private void ApplyTask(TaskDto task)
     {
+        _loadedTask = task;
         _isApplyingValues = true;
         try
         {
@@ -652,6 +662,8 @@ public sealed partial class TaskEditorViewModel : ObservableObject, INotifyDataE
             Materials = task.Materials ?? string.Empty;
             Notes = task.Notes ?? string.Empty;
             OnPropertyChanged(nameof(TimeZoneDisplayName));
+            NotifyRecurrenceTaskStateChanged();
+            OnPropertyChanged(nameof(WindowTitle));
         }
         finally
         {

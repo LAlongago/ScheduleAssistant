@@ -211,5 +211,7 @@ public sealed class CompositionRegistrationTests
         public string? PromptAttachmentDisplayName(string currentDisplayName) => currentDisplayName;
 
         public bool ConfirmRemoveAttachment(string displayName) => true;
+
+        public bool ConfirmRecurrenceOperation(string title, string message, string confirmLabel) => true;
     }
 }

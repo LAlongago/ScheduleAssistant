@@ -30,6 +30,10 @@ Available now:
 - managed attachment import, open, reveal, rename, remove, bounded cleanup retry, and orphan diagnosis;
 - recurrence series creation, update, deactivation, occurrence deletion, future deletion, and idempotent
   startup/calendar materialization through Application use cases;
+- recurrence task editing for daily, weekly, monthly, and yearly interval-one rules, including current-instance
+  overrides, series updates from an explicit ApplyFromDate, and confirmed occurrence-range actions; recurring
+  series do not support Deadline, reminders, or series attachments, and the month-end clamp rules are shown in
+  the editor;
 - a simplified-Chinese Windows font stack led by Microsoft YaHei UI, flat selection controls, four-digit
   time pickers, equal-width editor sections, and collapsed optional Deadline/content sections with independent
   expansion; when both are open their cards share the same height, while a single open card does not stretch
@@ -45,7 +49,6 @@ Still intentionally placeholder-only:
 
 - Week and Month calendar pages;
 - All Tasks and search filtering;
-- recurrence rule editing and recurrence-series UI (reserved for DEV-061);
 - notifications, tray, startup, desktop mode, backup, and other later Windows integration work.
 
 The placeholder pages do not query or write fake task data. Light and alternate Dark resource dictionaries
@@ -101,8 +104,8 @@ dotnet run --project .\src\ScheduleAssistant.Presentation\ScheduleAssistant.Pres
 
 On first host startup the application creates its local SQLite data directory and applies the immutable
 migrations. The managed database contains task/category/query foundations, recurrence series and managed
-attachment metadata. Recurrence materialization and attachment maintenance are integrated; recurrence rule
-editing (DEV-061) and later Windows integration remain outside this integrated core UI.
+attachment metadata. Recurrence materialization, recurrence rule editing, and attachment maintenance are
+integrated; recurrence interval customization and later Windows integration remain outside this core UI.
 
 ## Repository layout
 
