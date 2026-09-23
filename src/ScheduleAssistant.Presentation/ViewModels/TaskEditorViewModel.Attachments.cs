@@ -402,24 +402,24 @@ public sealed partial class TaskEditorViewModel
 
     private bool CanAddAttachment()
     {
-        return IsAttachmentsEnabled && IsInitialized && !IsBusy;
+        return CanManageAttachments && IsInitialized && !IsBusy;
     }
 
     private bool CanOpenAttachment(AttachmentEditorItemViewModel? item)
     {
-        return IsAttachmentsEnabled && IsInitialized && !IsBusy
+        return CanManageAttachments && IsInitialized && !IsBusy
             && item is not null && item.CanOpen && item.Id != Guid.Empty;
     }
 
     private bool CanRenameAttachment(AttachmentEditorItemViewModel? item)
     {
-        return IsAttachmentsEnabled && IsInitialized && !IsBusy
+        return CanManageAttachments && IsInitialized && !IsBusy
             && item is not null && item.CanRename && item.Id != Guid.Empty;
     }
 
     private bool CanRemoveAttachment(AttachmentEditorItemViewModel? item)
     {
-        return IsAttachmentsEnabled && IsInitialized && !IsBusy && item is not null;
+        return CanManageAttachments && IsInitialized && !IsBusy && item is not null;
     }
 
     private void HandleAttachmentOperationResult<T>(

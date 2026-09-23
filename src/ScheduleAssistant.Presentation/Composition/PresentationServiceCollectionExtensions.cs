@@ -4,6 +4,7 @@ using System.Windows.Threading;
 using ScheduleAssistant.Application.Abstractions.Events;
 using ScheduleAssistant.Application.Attachments;
 using ScheduleAssistant.Application.Recurrence;
+using ScheduleAssistant.Application.Reminders;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Infrastructure.Persistence;
 using ScheduleAssistant.Presentation.ViewModels;
@@ -40,11 +41,16 @@ public static class PresentationServiceCollectionExtensions
             serviceProvider.GetRequiredService<TaskUseCases>());
         services.AddSingleton<ITaskQueries>(serviceProvider =>
             serviceProvider.GetRequiredService<TaskUseCases>());
+        services.AddSingleton<INotificationService, UnavailableNotificationService>();
+        services.AddSingleton<ReminderScheduler>();
+        services.AddSingleton<IReminderScheduler>(serviceProvider =>
+            serviceProvider.GetRequiredService<ReminderScheduler>());
         services.AddSingleton<IAttachmentUseCases, AttachmentUseCases>();
         services.AddSingleton<AttachmentMaintenanceService>();
         services.AddSingleton<IDatabaseInitialization, DatabaseInitialization>();
         services.AddHostedService<DatabaseInitializationHostedService>();
         services.AddHostedService<AttachmentMaintenanceHostedService>();
+        services.AddHostedService<ReminderSchedulerHostedService>();
         services.AddSingleton<IUiDispatcher>(_ => new WpfUiDispatcher(Dispatcher.CurrentDispatcher));
         services.AddSingleton<IDeadlineRefreshTimer, DeadlineRefreshTimer>();
         services.AddSingleton<ITaskCardMapper, TaskCardMapper>();

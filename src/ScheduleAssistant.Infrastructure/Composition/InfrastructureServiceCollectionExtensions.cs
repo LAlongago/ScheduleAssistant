@@ -11,6 +11,8 @@ using ScheduleAssistant.Infrastructure.FileSystem;
 using ScheduleAssistant.Infrastructure.Persistence;
 using ScheduleAssistant.Infrastructure.Persistence.Repositories;
 using ScheduleAssistant.Infrastructure.Settings;
+using ScheduleAssistant.Application.Reminders;
+using ScheduleAssistant.Infrastructure.Reminders;
 
 namespace ScheduleAssistant.Infrastructure.Composition;
 
@@ -54,6 +56,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddSingleton<IRecurrenceSeriesRepository>(serviceProvider =>
             new PersistenceMappingRecurrenceSeriesRepository(
                 serviceProvider.GetRequiredService<SqliteRecurrenceSeriesRepository>()));
+        services.AddSingleton<IOneShotTimerFactory, TimeProviderOneShotTimerFactory>();
         services.AddSingleton<SqliteReminderRepository>();
         services.AddSingleton<IReminderRepository>(serviceProvider =>
             new PersistenceMappingReminderRepository(serviceProvider.GetRequiredService<SqliteReminderRepository>()));

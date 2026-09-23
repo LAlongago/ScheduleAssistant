@@ -97,4 +97,20 @@ public sealed class WpfTaskEditorInteractionService : ITaskEditorInteractionServ
             MessageBoxResult.No);
         return result == MessageBoxResult.Yes;
     }
+
+    /// <inheritdoc />
+    public bool ConfirmRecurrenceOperation(string title, string message, string confirmLabel)
+    {
+        var owner = System.Windows.Application.Current?.Windows
+            .OfType<Window>()
+            .FirstOrDefault(window => window.IsActive)
+            ?? System.Windows.Application.Current?.MainWindow;
+        var dialog = new ConfirmRecurrenceActionWindow(title, message, confirmLabel);
+        if (owner is not null)
+        {
+            dialog.Owner = owner;
+        }
+
+        return dialog.ShowDialog() == true;
+    }
 }
