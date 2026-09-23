@@ -21,6 +21,12 @@ public sealed partial class TaskEditorViewModel
             return;
         }
 
+        if (IsRecurrenceSubmission)
+        {
+            await SaveRecurrenceAsync();
+            return;
+        }
+
         if (!TryBuildDraft(out var draft))
         {
             ShowValidationErrors = true;
@@ -107,8 +113,10 @@ public sealed partial class TaskEditorViewModel
                 return;
             }
 
+            _isEditingRecurrenceSeries = false;
             ApplyTask(result.Value);
             await LoadAttachmentsAsync(CancellationToken.None);
+            await LoadRecurrenceSeriesForTaskAsync(CancellationToken.None);
             _isDirty = false;
             _hasConflict = false;
             ClearErrors();
@@ -116,6 +124,7 @@ public sealed partial class TaskEditorViewModel
             OnPropertyChanged(nameof(IsDirty));
             OnPropertyChanged(nameof(HasConflict));
             NotifyCommandState();
+            NotifyRecurrenceStateChanged();
         }
         catch (OperationCanceledException)
         {
@@ -320,7 +329,9 @@ public sealed partial class TaskEditorViewModel
 
         var plannedStart = ParseTime(PlannedStartText, nameof(PlannedStartText), errors);
         var plannedEnd = ParseTime(PlannedEndText, nameof(PlannedEndText), errors);
-        if ((plannedStart.HasValue || plannedEnd.HasValue) && PlannedDate is null)
+        if (IsTaskOnlyDataEnabled
+            && (plannedStart.HasValue || plannedEnd.HasValue)
+            && PlannedDate is null)
         {
             AddError(errors, nameof(PlannedDateValue), "填写计划时间前必须先选择计划日期。");
         }
@@ -355,6 +366,7 @@ public sealed partial class TaskEditorViewModel
         AddMaximumLengthError(errors, nameof(Description), Description, 10_000, "具体事务最多 10,000 个字符。");
         AddMaximumLengthError(errors, nameof(Materials), Materials, 10_000, "材料准备最多 10,000 个字符。");
         AddMaximumLengthError(errors, nameof(Notes), Notes, 10_000, "备注最多 10,000 个字符。");
+        ValidateRecurrenceForm(errors);
 
         var readOnlyErrors = errors.ToDictionary(
             pair => pair.Key,

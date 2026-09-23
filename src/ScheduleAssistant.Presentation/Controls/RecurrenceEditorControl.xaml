@@ -1,0 +1,225 @@
+<UserControl x:Class="ScheduleAssistant.Presentation.Controls.RecurrenceEditorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="False">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </UserControl.Resources>
+    <Border Background="{DynamicResource Brush.SurfaceSubtle}"
+            BorderBrush="{DynamicResource Brush.Border}"
+            BorderThickness="{DynamicResource BorderThickness.Subtle}"
+            CornerRadius="{DynamicResource Radius.Card}"
+            Padding="{DynamicResource Spacing.Card}">
+        <StackPanel>
+            <TextBlock Style="{StaticResource Text.SectionTitle}" Text="周期" />
+
+            <StackPanel Margin="0,8,0,0"
+                        Visibility="{Binding IsRecurrenceUnavailable, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Style="{StaticResource Text.Caption}"
+                           Text="周期系列服务暂不可用，当前编辑仍可保存普通任务。" />
+            </StackPanel>
+
+            <StackPanel Margin="0,8,0,0"
+                        Visibility="{Binding IsCreateMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <CheckBox AutomationProperties.Name="按周期重复"
+                          Content="按周期重复"
+                          IsChecked="{Binding IsRecurrenceEnabled, UpdateSourceTrigger=PropertyChanged}"
+                          IsEnabled="{Binding CanCreateRecurrenceSeries}"
+                          Style="{StaticResource CheckBox.Base}" />
+                <TextBlock Margin="0,6,0,0"
+                           Style="{StaticResource Text.Caption}"
+                           Text="开启后保存周期系列，不会另外创建普通任务副本。" />
+                <TextBlock Margin="0,6,0,0"
+                           Foreground="{DynamicResource Brush.Danger}"
+                           Text="{Binding RecurrenceModeError}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding HasRecurrenceModeError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,8,0,0"
+                        Visibility="{Binding IsOrdinaryTaskEdit, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Style="{StaticResource Text.Caption}"
+                           Text="已保存的普通任务不能原地转换为周期系列；如需重复，请新建周期任务。" />
+            </StackPanel>
+
+            <StackPanel Margin="0,8,0,0"
+                        Visibility="{Binding IsRecurrenceOccurrence, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Style="{StaticResource Text.Caption}" Text="当前实例" />
+                <TextBlock Margin="0,4,0,0"
+                           Foreground="{DynamicResource Brush.TextPrimary}"
+                           Text="{Binding RecurrenceSeriesSummary}"
+                           TextWrapping="Wrap" />
+                <TextBlock Margin="0,6,0,0"
+                           Style="{StaticResource Text.Caption}"
+                           Text="保存此编辑器中的普通任务字段，只修改当前实例并形成覆盖；系列规则不变。" />
+                <TextBlock Margin="0,6,0,0"
+                           Foreground="{DynamicResource Brush.Danger}"
+                           Text="{Binding RecurrenceLoadMessage}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding HasRecurrenceLoadMessage, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Button Margin="0,10,0,0"
+                        AutomationProperties.Name="编辑系列和此后实例"
+                        Command="{Binding EditRecurrenceSeriesCommand}"
+                        Content="编辑系列 / 此后未完成实例"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource Button.Secondary}"
+                        Visibility="{Binding IsNotEditingRecurrenceSeries, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,8,0,0"
+                        Visibility="{Binding IsRecurrenceConfigurationMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Style="{StaticResource Text.Caption}"
+                           Text="周期系列不保存 Deadline、提醒或系列附件；这些字段已禁用。系列更新替换实例时，原实例的 Deadline、提醒和附件也会随原任务删除。" />
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Visibility="{Binding IsRecurringCreationMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Style="{StaticResource Text.Caption}" Text="生效日期 *" />
+                        <DatePicker AutomationProperties.Name="周期生效日期"
+                                    SelectedDate="{Binding RecurrenceEffectiveDateValue, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                    Style="{StaticResource DatePicker.Modern}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Visibility="{Binding IsEditingRecurrenceSeries, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Style="{StaticResource Text.Caption}" Text="ApplyFromDate *（生效日期）" />
+                        <DatePicker AutomationProperties.Name="周期系列 ApplyFromDate"
+                                    SelectedDate="{Binding ApplyFromDateValue, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                    Style="{StaticResource DatePicker.Modern}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Margin="0,10,0,4" Style="{StaticResource Text.Caption}" Text="重复规则" />
+                <ComboBox AutomationProperties.Name="周期频率"
+                          DisplayMemberPath="Label"
+                          ItemsSource="{Binding RecurrenceFrequencyOptions}"
+                          SelectedValue="{Binding SelectedRecurrenceFrequency, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedValuePath="Value"
+                          Style="{StaticResource ComboBox.Modern}" />
+                <TextBlock Margin="0,8,0,0" Style="{StaticResource Text.Caption}" Text="周期固定为 1；不提供自定义间隔。" />
+
+                <ItemsControl Margin="0,8,0,0"
+                              ItemsSource="{Binding RecurrenceWeekdayOptions}"
+                              Visibility="{Binding IsWeeklyRule, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox Margin="0,0,10,6"
+                                      AutomationProperties.Name="{Binding Label}"
+                                      Content="{Binding Label}"
+                                      IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      Style="{StaticResource CheckBox.Base}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Margin="0,8,0,0"
+                            Visibility="{Binding IsMonthlyRule, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Style="{StaticResource Text.Caption}" Text="每月日期" />
+                    <ComboBox AutomationProperties.Name="每月日期"
+                              ItemsSource="{Binding RecurrenceDayOptions}"
+                              SelectedItem="{Binding MonthlyDay, UpdateSourceTrigger=PropertyChanged}"
+                              Style="{StaticResource ComboBox.Modern}" />
+                </StackPanel>
+
+                <Grid Margin="0,8,0,0" Visibility="{Binding IsYearlyRule, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="12" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource Text.Caption}" Text="每年月份" />
+                        <ComboBox AutomationProperties.Name="每年月份"
+                                  DisplayMemberPath="Label"
+                                  ItemsSource="{Binding RecurrenceMonthOptions}"
+                                  SelectedValue="{Binding YearMonth, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="Value"
+                                  Style="{StaticResource ComboBox.Modern}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Style="{StaticResource Text.Caption}" Text="每月日期" />
+                        <ComboBox AutomationProperties.Name="每年日期"
+                                  ItemsSource="{Binding RecurrenceYearDayOptions}"
+                                  SelectedItem="{Binding YearDay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource ComboBox.Modern}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Margin="0,8,0,0"
+                           Foreground="{DynamicResource Brush.Warning}"
+                           Text="{Binding RecurrencePolicyNotice}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding HasRecurrencePolicyNotice, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+                <TextBlock Margin="0,10,0,4" Style="{StaticResource Text.Caption}" Text="时区 *" />
+                <ComboBox AutomationProperties.Name="周期时区"
+                          DisplayMemberPath="Label"
+                          ItemsSource="{Binding RecurrenceTimeZoneOptions}"
+                          SelectedValue="{Binding RecurrenceTimeZoneId, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                          SelectedValuePath="Id"
+                          Style="{StaticResource ComboBox.Modern}" />
+
+                <TextBlock Margin="0,10,0,4" Style="{StaticResource Text.Caption}" Text="结束日期（可留空）" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <DatePicker AutomationProperties.Name="周期结束日期"
+                                SelectedDate="{Binding RecurrenceEndDateValue, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                Style="{StaticResource DatePicker.Modern}" />
+                    <Button Grid.Column="2"
+                            AutomationProperties.Name="清除周期结束日期"
+                            Command="{Binding ClearRecurrenceEndDateCommand}"
+                            Content="不设结束日期"
+                            Style="{StaticResource Button.Quiet}" />
+                </Grid>
+
+                <Button Margin="0,10,0,0"
+                        AutomationProperties.Name="返回编辑当前实例"
+                        Command="{Binding ReturnToOccurrenceCommand}"
+                        Content="返回编辑当前实例"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource Button.Secondary}"
+                        Visibility="{Binding IsEditingRecurrenceSeries, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </StackPanel>
+
+            <StackPanel Margin="0,8,0,0"
+                        Visibility="{Binding IsRecurrenceOccurrence, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <StackPanel Visibility="{Binding IsNotEditingRecurrenceSeries, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Style="{StaticResource Text.Caption}" Text="删除此后实例的起始日期" />
+                    <DatePicker Margin="0,4,0,0"
+                                AutomationProperties.Name="删除范围起始日期"
+                                SelectedDate="{Binding DeleteFromDateValue, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True}"
+                                Style="{StaticResource DatePicker.Modern}" />
+                </StackPanel>
+                <TextBlock Margin="0,6,0,0"
+                           Foreground="{DynamicResource Brush.Danger}"
+                           Text="{Binding RecurrenceModeError}"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding HasRecurrenceModeError, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Button Margin="0,8,0,0"
+                        AutomationProperties.Name="删除当前周期实例"
+                        Command="{Binding DeleteOccurrenceCommand}"
+                        Content="删除当前实例…"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource Button.Danger}"
+                        Visibility="{Binding IsNotEditingRecurrenceSeries, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Button Margin="0,8,0,0"
+                        AutomationProperties.Name="删除此后未完成周期实例"
+                        Command="{Binding DeleteFutureOccurrencesCommand}"
+                        Content="删除此后未完成实例…"
+                        HorizontalAlignment="Left"
+                        Style="{StaticResource Button.Danger}"
+                        Visibility="{Binding IsNotEditingRecurrenceSeries, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

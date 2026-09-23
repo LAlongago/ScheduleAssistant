@@ -437,6 +437,8 @@ public sealed class TaskEditorViewModelTests
             RemoveConfirmationCalls++;
             return ConfirmRemoveResult;
         }
+
+        public bool ConfirmRecurrenceOperation(string title, string message, string confirmLabel) => true;
     }
 
     private sealed class RecordingAttachmentUseCases : IAttachmentUseCases
