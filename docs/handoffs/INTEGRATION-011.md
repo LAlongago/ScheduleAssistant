@@ -48,7 +48,8 @@ git diff --check
 
 ## 未完成、已知事项与人工验收
 
-- PR 创建并等待 PR CI 属于本轮交付后续步骤；本记录在本地提交前写入。PR 不会在 DEV-061 人工验收前合并。
+- PR：[#15](https://github.com/LAlongago/ScheduleAssistant/pull/15)，状态 OPEN，未合并。
+- 源码提交 `bac7c6e1df3ded433288677e28c9bc76d862c0ec` 的 PR `build-and-test` CI 已通过（1m22s）。本 handoff 状态补充为文档提交后，仍会等待该更新提交对应的 CI 结束；PR 不会在 DEV-061 人工验收前合并。
 - DEV-081 尚未提供正式 Windows 通知适配器，因此生产组合根下提醒调度器会保持休眠并保留 Pending 状态；provider 接入后可在启动或恢复时继续调度。
 - DEV-061 人工验收待用户完成：
   - 新建周期任务并保存，重启后仍显示；
