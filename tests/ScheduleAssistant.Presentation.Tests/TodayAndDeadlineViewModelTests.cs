@@ -439,6 +439,8 @@ public sealed class TodayAndDeadlineViewModelTests
             action();
             return Task.CompletedTask;
         }
+
+        public Task InvokeAsync(Func<Task> action) => action();
     }
 
     private sealed class MutableTimeProvider : TimeProvider

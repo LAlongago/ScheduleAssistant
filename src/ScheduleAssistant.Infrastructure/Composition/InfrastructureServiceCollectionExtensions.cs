@@ -13,6 +13,7 @@ using ScheduleAssistant.Infrastructure.Persistence.Repositories;
 using ScheduleAssistant.Infrastructure.Settings;
 using ScheduleAssistant.Application.Reminders;
 using ScheduleAssistant.Infrastructure.Reminders;
+using ScheduleAssistant.Infrastructure.Notifications;
 
 namespace ScheduleAssistant.Infrastructure.Composition;
 
@@ -57,6 +58,11 @@ public static class InfrastructureServiceCollectionExtensions
             new PersistenceMappingRecurrenceSeriesRepository(
                 serviceProvider.GetRequiredService<SqliteRecurrenceSeriesRepository>()));
         services.AddSingleton<IOneShotTimerFactory, TimeProviderOneShotTimerFactory>();
+        services.AddSingleton<WindowsNotificationService>();
+        services.AddSingleton<INotificationService>(serviceProvider =>
+            serviceProvider.GetRequiredService<WindowsNotificationService>());
+        services.AddSingleton<INotificationActivationSource>(serviceProvider =>
+            serviceProvider.GetRequiredService<WindowsNotificationService>());
         services.AddSingleton<SqliteReminderRepository>();
         services.AddSingleton<IReminderRepository>(serviceProvider =>
             new PersistenceMappingReminderRepository(serviceProvider.GetRequiredService<SqliteReminderRepository>()));

@@ -192,6 +192,26 @@ public sealed class ReminderSchedulerTests
         await context.Scheduler.RescheduleAsync();
     }
 
+    [Fact]
+    public async Task TimerCallback_WhenNotificationsAreDisabledDuringDelivery_ShouldPreservePendingAndSleep()
+    {
+        await using var context = new ReminderSchedulerTestContext();
+        var task = context.AddTask();
+        var reminder = context.AddReminder(task.Id, context.TimeProvider.GetUtcNow().AddMinutes(1));
+        context.NotificationService.Result = NotificationDeliveryResult.Failure(
+            "notification.disabled-for-application");
+        context.NotificationService.OnShow = () => context.NotificationService.IsAvailable = false;
+        await context.Scheduler.StartAsync();
+
+        context.TimeProvider.Advance(TimeSpan.FromMinutes(1));
+        await context.TimerFactory.Timer!.FireAsync();
+
+        var persisted = await context.ReminderRepository.GetByIdAsync(reminder.Id);
+        Assert.Equal(ReminderStatus.Pending, persisted!.Status);
+        Assert.Null(persisted.ErrorCode);
+        Assert.Null(context.TimerFactory.Timer.ScheduledDelay);
+    }
+
     private sealed class ReminderSchedulerTestContext : IAsyncDisposable
     {
         private static readonly DateTimeOffset InitialTime = new(2026, 5, 20, 12, 0, 0, TimeSpan.Zero);
@@ -342,6 +362,8 @@ public sealed class ReminderSchedulerTests
 
         public Exception? ExceptionToThrow { get; set; }
 
+        public Action? OnShow { get; set; }
+
         public Task<NotificationProviderCapability> GetCapabilityAsync(
             CancellationToken cancellationToken = default)
         {
@@ -359,6 +381,7 @@ public sealed class ReminderSchedulerTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             Attempts.Add(notification);
+            OnShow?.Invoke();
             if (ExceptionToThrow is not null)
             {
                 throw ExceptionToThrow;

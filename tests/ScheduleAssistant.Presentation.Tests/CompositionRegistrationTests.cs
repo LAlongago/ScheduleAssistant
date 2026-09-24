@@ -12,6 +12,7 @@ using ScheduleAssistant.Application.Reminders;
 using ScheduleAssistant.Domain;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Infrastructure.Composition;
+using ScheduleAssistant.Infrastructure.Notifications;
 using ScheduleAssistant.Presentation;
 using ScheduleAssistant.Presentation.Composition;
 using ScheduleAssistant.Presentation.Controls;
@@ -41,16 +42,19 @@ public sealed class CompositionRegistrationTests
             {
                 typeof(DatabaseInitializationHostedService),
                 typeof(AttachmentMaintenanceHostedService),
+                typeof(NotificationActivationHostedService),
+                typeof(WindowsNotificationService),
                 typeof(ReminderSchedulerHostedService)
             },
             hostedServiceTypes);
     }
 
     [Fact]
-    public async Task AddPresentation_WhenNotificationAdapterIsNotConfigured_ShouldRegisterUnavailableProvider()
+    public async Task AddPresentation_WhenNotificationAdapterHasNotStarted_ShouldReportNotRegistered()
     {
         var rootDirectory = Path.Combine(Path.GetTempPath(), "ScheduleAssistant-DEV080-notifications-" + Guid.NewGuid().ToString("N"));
         using var provider = new ServiceCollection()
+            .AddLogging()
             .AddInfrastructure(rootDirectory)
             .AddPresentation()
             .BuildServiceProvider();
@@ -58,7 +62,7 @@ public sealed class CompositionRegistrationTests
         var capability = await provider.GetRequiredService<INotificationService>().GetCapabilityAsync();
 
         Assert.False(capability.IsAvailable);
-        Assert.Equal("notification.adapter-not-configured", capability.ErrorCode);
+        Assert.Equal("notification.not-registered", capability.ErrorCode);
     }
 
     [Fact]

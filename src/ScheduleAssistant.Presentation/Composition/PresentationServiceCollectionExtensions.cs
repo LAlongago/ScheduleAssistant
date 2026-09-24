@@ -7,6 +7,7 @@ using ScheduleAssistant.Application.Recurrence;
 using ScheduleAssistant.Application.Reminders;
 using ScheduleAssistant.Application.Tasks;
 using ScheduleAssistant.Infrastructure.Persistence;
+using ScheduleAssistant.Infrastructure.Notifications;
 using ScheduleAssistant.Presentation.ViewModels;
 
 namespace ScheduleAssistant.Presentation.Composition;
@@ -41,7 +42,6 @@ public static class PresentationServiceCollectionExtensions
             serviceProvider.GetRequiredService<TaskUseCases>());
         services.AddSingleton<ITaskQueries>(serviceProvider =>
             serviceProvider.GetRequiredService<TaskUseCases>());
-        services.AddSingleton<INotificationService, UnavailableNotificationService>();
         services.AddSingleton<ReminderScheduler>();
         services.AddSingleton<IReminderScheduler>(serviceProvider =>
             serviceProvider.GetRequiredService<ReminderScheduler>());
@@ -50,6 +50,10 @@ public static class PresentationServiceCollectionExtensions
         services.AddSingleton<IDatabaseInitialization, DatabaseInitialization>();
         services.AddHostedService<DatabaseInitializationHostedService>();
         services.AddHostedService<AttachmentMaintenanceHostedService>();
+        services.AddSingleton<NotificationActivationRouter>();
+        services.AddHostedService<NotificationActivationHostedService>();
+        services.AddHostedService<WindowsNotificationService>(serviceProvider =>
+            serviceProvider.GetRequiredService<WindowsNotificationService>());
         services.AddHostedService<ReminderSchedulerHostedService>();
         services.AddSingleton<IUiDispatcher>(_ => new WpfUiDispatcher(Dispatcher.CurrentDispatcher));
         services.AddSingleton<IDeadlineRefreshTimer, DeadlineRefreshTimer>();
