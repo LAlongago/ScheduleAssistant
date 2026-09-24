@@ -3,6 +3,9 @@
     <TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
     <RootNamespace>ScheduleAssistant.Infrastructure</RootNamespace>
     <AssemblyName>ScheduleAssistant.Infrastructure</AssemblyName>
+    <WindowsAppSDKSelfContained Condition="'$(RuntimeIdentifier)' != ''">true</WindowsAppSDKSelfContained>
+    <WindowsAppSdkIncludeVersionInfo>true</WindowsAppSdkIncludeVersionInfo>
+    <DefineConstants Condition="'$(WindowsAppSDKSelfContained)' == 'true'">$(DefineConstants);SCHEDULEASSISTANT_WINDOWSAPPSDK_SELF_CONTAINED</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

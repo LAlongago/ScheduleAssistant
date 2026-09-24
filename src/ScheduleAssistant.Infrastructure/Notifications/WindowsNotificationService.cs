@@ -33,6 +33,7 @@ public sealed class WindowsNotificationService : INotificationService, INotifica
     private bool _startAttempted;
     private bool _registered;
     private bool _runtimeEventSubscribed;
+    private bool _runtimeInitialized;
     private string? _registrationErrorCode;
     private bool _stopped;
 
@@ -67,6 +68,31 @@ public sealed class WindowsNotificationService : INotificationService, INotifica
         }
 
         _startAttempted = true;
+        try
+        {
+            if (!_runtime.TryInitialize(out var hresult))
+            {
+                _registrationErrorCode = RuntimeUnavailableCode;
+                _logger.LogWarning(
+                    "Windows App SDK runtime is unavailable; error code {ErrorCode}, HRESULT {HResult}.",
+                    _registrationErrorCode,
+                    hresult);
+                return Task.CompletedTask;
+            }
+
+            _runtimeInitialized = true;
+        }
+        catch (Exception exception)
+        {
+            _registrationErrorCode = RuntimeUnavailableCode;
+            _logger.LogWarning(
+                "Windows App SDK runtime initialization failed; error code {ErrorCode}, exception type {ExceptionType}, HRESULT {HResult}.",
+                _registrationErrorCode,
+                exception.GetType().Name,
+                exception.HResult);
+            return Task.CompletedTask;
+        }
+
         bool isSupported;
         try
         {
@@ -138,6 +164,25 @@ public sealed class WindowsNotificationService : INotificationService, INotifica
             finally
             {
                 _registered = false;
+            }
+        }
+
+        if (_runtimeInitialized)
+        {
+            try
+            {
+                _runtime.Shutdown();
+            }
+            catch (Exception exception)
+            {
+                _logger.LogWarning(
+                    "Windows App SDK runtime shutdown failed; exception type {ExceptionType}, HRESULT {HResult}.",
+                    exception.GetType().Name,
+                    exception.HResult);
+            }
+            finally
+            {
+                _runtimeInitialized = false;
             }
         }
 

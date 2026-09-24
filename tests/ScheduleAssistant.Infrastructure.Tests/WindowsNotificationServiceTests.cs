@@ -23,6 +23,43 @@ public sealed class WindowsNotificationServiceTests
     }
 
     [Fact]
+    public async Task StartAsync_WhenWindowsAppRuntimeIsMissing_ShouldReportUnavailableWithoutRegistering()
+    {
+        var runtime = new FakeWindowsAppNotificationRuntime { InitializationSucceeds = false };
+        var service = CreateService(runtime);
+
+        await service.StartAsync(CancellationToken.None);
+
+        var capability = await service.GetCapabilityAsync();
+        Assert.False(capability.IsAvailable);
+        Assert.Equal("notification.runtime-unavailable", capability.ErrorCode);
+        Assert.Equal(1, runtime.InitializeCount);
+        Assert.Equal(0, runtime.RegisterCount);
+        Assert.Equal(0, runtime.SubscriberCount);
+
+        await service.StopAsync(CancellationToken.None);
+        Assert.Equal(0, runtime.ShutdownCount);
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenRuntimeInitializationThrows_ShouldReportUnavailableWithoutRegistering()
+    {
+        var runtime = new FakeWindowsAppNotificationRuntime
+        {
+            InitializationException = new InvalidOperationException("private runtime detail")
+        };
+        var service = CreateService(runtime);
+
+        await service.StartAsync(CancellationToken.None);
+
+        var capability = await service.GetCapabilityAsync();
+        Assert.False(capability.IsAvailable);
+        Assert.Equal("notification.runtime-unavailable", capability.ErrorCode);
+        Assert.Equal(0, runtime.RegisterCount);
+        Assert.Equal(0, runtime.SubscriberCount);
+    }
+
+    [Fact]
     public async Task StartAsync_WhenSupported_ShouldSubscribeBeforeRegisterAndRegisterOnlyOnce()
     {
         var runtime = new FakeWindowsAppNotificationRuntime();
@@ -56,6 +93,10 @@ public sealed class WindowsNotificationServiceTests
         Assert.False(result.IsSuccess);
         Assert.Equal("notification.registration-failed", result.ErrorCode);
         Assert.Empty(runtime.ShownPayloads);
+
+        await service.StopAsync(CancellationToken.None);
+        Assert.Equal(0, runtime.UnregisterCount);
+        Assert.Equal(1, runtime.ShutdownCount);
     }
 
     [Fact]
@@ -120,6 +161,8 @@ public sealed class WindowsNotificationServiceTests
         await service.StopAsync(CancellationToken.None);
 
         Assert.Equal(1, runtime.UnregisterCount);
+        Assert.Equal(1, runtime.ShutdownCount);
+        Assert.Equal("initialize,register,unregister,shutdown", string.Join(",", runtime.LifecycleCalls));
         Assert.Equal(0, runtime.SubscriberCount);
         Assert.False((await service.GetCapabilityAsync()).IsAvailable);
     }
@@ -208,6 +251,16 @@ public sealed class WindowsNotificationServiceTests
     {
         public event Action<string?>? NotificationInvoked;
 
+        public bool InitializationSucceeds { get; set; } = true;
+
+        public Exception? InitializationException { get; set; }
+
+        public int InitializeCount { get; private set; }
+
+        public int ShutdownCount { get; private set; }
+
+        public List<string> LifecycleCalls { get; } = [];
+
         public bool Supported { get; set; } = true;
 
         public AppNotificationSetting CurrentSetting { get; set; } = AppNotificationSetting.Enabled;
@@ -224,6 +277,25 @@ public sealed class WindowsNotificationServiceTests
 
         public List<string> ShownPayloads { get; } = [];
 
+        public bool TryInitialize(out int hresult)
+        {
+            InitializeCount++;
+            LifecycleCalls.Add("initialize");
+            if (InitializationException is not null)
+            {
+                throw InitializationException;
+            }
+
+            hresult = InitializationSucceeds ? 0 : unchecked((int)0x80040154);
+            return InitializationSucceeds;
+        }
+
+        public void Shutdown()
+        {
+            ShutdownCount++;
+            LifecycleCalls.Add("shutdown");
+        }
+
         public bool IsSupported() => Supported;
 
         public AppNotificationSetting Setting => CurrentSetting;
@@ -231,6 +303,7 @@ public sealed class WindowsNotificationServiceTests
         public void Register()
         {
             RegisterCount++;
+            LifecycleCalls.Add("register");
             RegisterObservedSubscriber = SubscriberCount > 0;
             if (RegisterException is not null)
             {
@@ -238,7 +311,11 @@ public sealed class WindowsNotificationServiceTests
             }
         }
 
-        public void Unregister() => UnregisterCount++;
+        public void Unregister()
+        {
+            UnregisterCount++;
+            LifecycleCalls.Add("unregister");
+        }
 
         public void Show(string payload) => ShownPayloads.Add(payload);
 

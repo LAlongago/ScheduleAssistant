@@ -6,6 +6,7 @@
     <RootNamespace>ScheduleAssistant.Presentation</RootNamespace>
     <AssemblyName>ScheduleAssistant</AssemblyName>
     <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSdkBootstrapInitialize>false</WindowsAppSdkBootstrapInitialize>
     <WindowsAppSDKSelfContained Condition="'$(RuntimeIdentifier)' != ''">true</WindowsAppSDKSelfContained>
   </PropertyGroup>
 

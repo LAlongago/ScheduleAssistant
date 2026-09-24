@@ -8,6 +8,12 @@ internal interface IWindowsAppNotificationRuntime
     /// <summary>Raised with the raw activation argument after the native notification is invoked.</summary>
     event Action<string?>? NotificationInvoked;
 
+    /// <summary>Initializes the framework runtime without showing UI; self-contained builds need no bootstrap.</summary>
+    bool TryInitialize(out int hresult);
+
+    /// <summary>Releases this process's framework runtime dependency after notification registration ends.</summary>
+    void Shutdown();
+
     /// <summary>Reports whether this process can call the Windows App SDK notification APIs.</summary>
     bool IsSupported();
 
