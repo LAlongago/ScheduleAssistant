@@ -31,7 +31,9 @@
 
 - PR #16 首次 CI run `35948715049` 的 Release build 因 `NotificationActivationRouter` 的 CA1873 分析器诊断失败，GitHub Actions 未进入测试阶段。
 - 在无任务可打开时的安全诊断日志外加 `_logger.IsEnabled(LogLevel.Information)` 检查，避免日志级别关闭时仍构造日志参数；不改变激活路由或日志字段。
-- 修正后已在本地重跑 Release solution build、四个指定测试项目和 WPF 启动/单实例/正常退出 smoke，均通过。修正后的 PR CI 状态在交付回复中报告。
+- 修正后的 PR run `35949157645` 两次都通过 Release build；两次 `dotnet test` 均运行超过 20 分钟后仍未结束。日志显示 Domain、Application、Infrastructure 通过，Architecture 和 Presentation 测试宿主启动后没有结果；已取消这两次无进展的尝试。
+- 本地指定四个测试项目均通过；为诊断 CI 额外运行的完整 solution 测试命令也以退出码 0 完成。
+- 为保留全部 solution tests，本次让 CI 串行运行测试项目，以检验并行 test host 互相争用是否为挂起原因；此设置不跳过测试，最终 CI 状态在交付回复中报告。
 
 ## 验证命令与结果
 
@@ -51,6 +53,14 @@ git diff --check
 - Release solution build：成功，0 warnings、0 errors。
 - Application.Tests：44/44；Infrastructure.Tests：56/56；Presentation.Tests：55/55；Architecture.Tests：4/4；均为 0 failed、0 skipped。
 - 关键覆盖来自合并后的测试：能力状态映射、通知 XML 转义、激活白名单、注册失败、通知关闭时 Pending 保留、运行中/冷启动路由及单实例组合注册。
+本地诊断远端挂起时还运行了以下完整 solution test 命令，临时结果目录在完成后清理：
+
+```powershell
+$resultPath = Join-Path $env:TEMP ('ScheduleAssistant-INTEGRATION-012-tests-' + [Guid]::NewGuid().ToString('N'))
+& 'E:\Dev\Tools\ScheduleAssistantDotnet\dotnet.exe' test .\ScheduleAssistant.sln --configuration Release --no-build --no-restore --nologo --logger 'console;verbosity=normal' --results-directory $resultPath
+```
+
+结果：退出码 0；Domain、Application、Infrastructure、Presentation、Architecture 项目测试均完成。
 - `git diff --check`：通过。
 - WPF Release smoke 使用 `ScheduleAssistant__DataRoot` 指向临时隔离目录。主窗口句柄就绪；第二实例 15 秒内以退出码 0 退出，进程数保持为 1；主窗口正常关闭后主进程以退出码 0 退出，进程数为 0。隔离目录已清理。
 - Git tree 检查：DEV-081 来源提交和整合提交均不包含 `artifacts/`、`bin/`、`obj/` 或 self-contained 发布文件。
@@ -60,6 +70,7 @@ PR CI 在创建 PR 后运行；最终 PR/main CI 编号、合并 SHA 在交付�
 ## 文件、接口与数据库影响
 
 - DEV-081 的应用激活契约、基础设施 Windows App SDK 通知适配器、Presentation 启动和单实例路由，以及相应 Application、Infrastructure、Presentation、Architecture 测试均随来源提交整合。
+- CI 测试执行配置：`.github/workflows/ci.yml` 改为串行运行 solution 测试项目。
 - 文档更新：`README.md`、`docs/adr/003-windows-notifications-and-publish-model.md`、`docs/handoffs/INTEGRATION-011.md`；本文件为新 handoff。
 - `INotificationService` 的正式 provider 能力语义来自 DEV-081；无数据库、迁移、Reminder 状态编码或周期行为变更。
 - 最终提交 SHA 无法写入此 handoff 自身并保持不变；由交付回复报告。
