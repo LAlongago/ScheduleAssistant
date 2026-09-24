@@ -34,7 +34,9 @@
 - PR run `35949157645` 的两次尝试均通过 Release build，但 `dotnet test` 超过 20 分钟未结束。日志显示 Domain、Application、Infrastructure 通过；Architecture 和 Presentation 测试宿主均已启动但没有结果。
 - 为保留所有 solution tests，将 CI 测试命令改为 `-m:1`。串行 PR run `35952566922` 通过 Release build，Domain 102/102、Application 44/44、Infrastructure 56/56 通过；Architecture 测试宿主启动后超过 20 分钟无结果，故取消。串行设置未解决该问题。
 - Architecture 测试原先通过 `typeof(App).Assembly` 加载 WPF 主程序集。现改为直接读取各生产项目 `.csproj` 的 `ProjectReference` 声明；Architecture.Tests 改回 `net10.0` 并移除生产项目引用，以免测试宿主加载 WPF/Windows App SDK。修正后本地 Architecture.Tests 4/4 通过，Release solution build 0 warnings、0 errors。
-- 修正后的 PR CI 尚待运行；最终 PR/main CI 状态在交付回复中报告。
+- PR run `35954752620` 中 Architecture.Tests 4/4 已通过；Presentation.Tests 开始后超 20 分钟无结果，已取消。
+- 为避免继续长时间等待，PR run `35957374357` 对单个测试设置 2 分钟挂起诊断并输出用例。Release build、Domain 102/102、Application 44/44、Infrastructure 56/56、Architecture 4/4 通过。Presentation 测试宿主中四个用例并发启动后均无结果；诊断超时并终止宿主。该证据指向 Presentation 测试并行运行时的宿主阻塞，尚不能据此判定具体测试用例本身失败。
+- Presentation.Tests 增加程序集级串行配置，保留全部 55 项测试，避免 WPF Application/Dispatcher 全进程状态与其他测试类并行运行。本地重新执行 Release solution build（0 warnings、0 errors）和 Presentation.Tests（55/55）均通过。最终 PR/main CI 状态在交付回复中报告。
 
 ## 验证命令与结果
 
@@ -72,7 +74,7 @@ PR CI 在创建 PR 后运行；最终 PR/main CI 编号、合并 SHA 在交付�
 
 - DEV-081 的应用激活契约、基础设施 Windows App SDK 通知适配器、Presentation 启动和单实例路由，以及相应 Application、Infrastructure、Presentation、Architecture 测试均随来源提交整合。
 - Architecture.Tests 直接检查项目文件中的引用方向，不加载生产程序集。
-- CI 测试执行配置：`.github/workflows/ci.yml` 改为串行运行 solution 测试项目。
+- CI 测试执行配置：`.github/workflows/ci.yml` 串行运行 solution 测试项目，添加 2 分钟挂起诊断和用例日志；Presentation.Tests 使用程序集级串行配置。
 - 文档更新：`README.md`、`docs/adr/003-windows-notifications-and-publish-model.md`、`docs/handoffs/INTEGRATION-011.md`；本文件为新 handoff。
 - `INotificationService` 的正式 provider 能力语义来自 DEV-081；无数据库、迁移、Reminder 状态编码或周期行为变更。
 - 最终提交 SHA 无法写入此 handoff 自身并保持不变；由交付回复报告。
