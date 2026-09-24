@@ -48,9 +48,9 @@ git diff --check
 
 ## 未完成、已知事项与人工验收
 
-- PR：[#15](https://github.com/LAlongago/ScheduleAssistant/pull/15)，状态 OPEN，未合并。
+- PR：[#15](https://github.com/LAlongago/ScheduleAssistant/pull/15)，已合并；最终 main：`4bc82d600d4512d28508f06c8b92e0d10e5f9ee2`。
 - 用户于 2026-09-23 确认 DEV-061 人工验收通过：新建并保存周期任务后重启仍能显示；每日/每周/每月/每年选项及月末策略说明符合预期；“仅当前实例”和“此后实例”的编辑/删除确认符合预期；周期模式对 Deadline、提醒和附件的禁用说明清楚，普通任务编辑未受影响。本次仅补充验收记录，没有额外代码变更。
-- 源码提交 `bac7c6e1df3ded433288677e28c9bc76d862c0ec` 的 PR `build-and-test` CI 已通过（1m22s）；handoff 更新提交推送后将等待该提交对应的 CI。人工验收完成后，PR 可在更新提交 CI 通过后合并。
-- DEV-081 尚未提供正式 Windows 通知适配器，因此生产组合根下提醒调度器会保持休眠并保留 Pending 状态；provider 接入后可在启动或恢复时继续调度。
-- 合并与合并后 main CI：待验收记录提交及 PR CI 完成后执行；来源分支与 worktree 保留。
+- PR CI：`35858966830`（成功）；main CI：`35859161735`（成功，head SHA 为指定最终 main）。
+- DEV-081 Windows 通知适配器已在 INTEGRATION-012 中整合；provider 不可用时 ReminderScheduler 仍休眠并保留 Pending 状态。
+- 用户于 2026-09-23 确认 DEV-061 人工验收通过。PR #15 与 main CI 均成功；PR 和 main 验证细节见对应 CI 记录。来源分支与 worktree 保留。
 - 最终 commit SHA 由交付消息报告。

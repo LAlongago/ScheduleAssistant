@@ -1,6 +1,6 @@
 # ADR-003：Windows 本地通知与发布模型
 
-- Status: DEV-081 已实现；生产验收仍待人工 Windows 验证
+- Status: DEV-081 已实现并整合；负责人报告三组 Windows 人工验收已完成
 - Date: 2026-09-17
 - Owners: ScheduleAssistant 工程
 - Related task(s): SPIKE-001, DEV-081；DEV-080 不在本实验范围
@@ -41,7 +41,7 @@
 
 - Windows App SDK Runtime/Singleton 是发布边界的关键风险；SCD 不等于通知 API 的完全 app-local、无安装依赖。
 - 未打包 COM 注册和路径移动存在生命周期限制；安装目录必须稳定，安装/升级流程需要显式重新注册和回滚策略。
-- SPIKE-001 只在 Windows 11 25H2（build 26200）验证。DEV-081 已实现正式适配器并通过自动化和 WPF 启停 smoke，但真实通知展示、点击冷启动、用户关闭通知权限后的 Pending 保留与恢复仍待人工验收；独立 Windows 10 环境和全新无运行时机器也未验证，不能据此声称跨版本或生产稳定性。原始注册表 `ProductName=Windows 10 Pro` 与 build/25H2 不一致，整合记录按 build 26200 归类为 Windows 11 25H2。
+- SPIKE-001 只在 Windows 11 25H2（build 26200）验证。DEV-081 已实现正式适配器并通过自动化和 WPF 启停 smoke，但负责人报告三组人工验收已完成（见 INTEGRATION-012）；本次整合未重复执行；独立 Windows 10 环境和全新无运行时机器也未验证，不能据此声称跨版本或生产稳定性。原始注册表 `ProductName=Windows 10 Pro` 与 build/25H2 不一致，整合记录按 build 26200 归类为 Windows 11 25H2。
 - 通知点击激活只验证“已发通知的回调/激活”；它不验证也不承诺应用退出、机器关机后未来提醒仍会主动发送。
 - 托盘、自启动和应用退出期间的未来提醒仍属于后续任务；当前 DEV-081 不复制 SPIKE-001 的临时 IPC，也不把任意命令当作激活契约。
 
@@ -53,13 +53,13 @@
 - 官方依据：[WPF app notifications](https://learn.microsoft.com/en-us/windows/apps/develop/notifications/app-notifications/app-notifications-dotnet)、[notifications overview](https://learn.microsoft.com/en-us/windows/apps/develop/notifications/)、[deployment overview](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/deploy-overview)、[self-contained deployment](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/self-contained-deploy/deploy-self-contained-apps)。
 - 选定 NuGet 包：[Microsoft.WindowsAppSDK 2.4.0](https://packages.nuget.org/packages/Microsoft.WindowsAppSDK/2.4.0)。
 
-DEV-081 的人工验收只保留以下三组，完成前不得标记生产验收通过：
+DEV-081 的三组人工验收由负责人报告已完成；本次整合未重新执行。验收范围如下：
 
 1. 创建即将触发的提醒，确认中文通知、任务标题和 Deadline 正常显示。
 2. 分别在应用运行中和关闭后点击通知，确认聚焦主窗口、打开正确任务且只有一个业务进程。
 3. 暂时关闭 Windows 对本应用的通知权限，确认 Reminder 保持 Pending；重新允许并重启或 Resume 后确认继续调度。
 
-SPIKE-001 已验证 Windows 11 25H2；独立 Windows 10 和全新无运行时环境仍没有证据，不能据当前验收步骤声称这些环境已通过。不得通过卸载本机运行时制造“干净环境”。
+SPIKE-001 已验证 Windows 11 25H2；DEV-081 的人工验收由负责人报告完成，但本次整合未复测通知展示、激活或权限切换。独立 Windows 10 和全新无运行时环境仍没有证据，不能据此声称这些环境已通过。不得通过卸载本机运行时制造“干净环境”。
 
 ## Revisit criteria
 
