@@ -10,6 +10,9 @@ public interface IUiDispatcher
 
     /// <summary>Runs a UI-bound action on the UI dispatcher.</summary>
     Task InvokeAsync(Action action);
+
+    /// <summary>Runs an asynchronous UI-bound action and waits for its dispatcher continuation.</summary>
+    Task InvokeAsync(Func<Task> action);
 }
 
 /// <summary>WPF implementation of the presentation dispatcher boundary.</summary>
@@ -33,6 +36,15 @@ public sealed class WpfUiDispatcher : IUiDispatcher
         return _dispatcher.CheckAccess()
             ? RunOnCurrentDispatcher(action)
             : _dispatcher.InvokeAsync(action, DispatcherPriority.DataBind).Task;
+    }
+
+    /// <inheritdoc />
+    public Task InvokeAsync(Func<Task> action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        return _dispatcher.CheckAccess()
+            ? action()
+            : _dispatcher.InvokeAsync(action, DispatcherPriority.DataBind).Task.Unwrap();
     }
 
     private static Task RunOnCurrentDispatcher(Action action)

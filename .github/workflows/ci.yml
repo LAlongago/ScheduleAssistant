@@ -33,7 +33,7 @@ jobs:
         run: dotnet build .\ScheduleAssistant.sln --configuration Release --no-restore --nologo
 
       - name: Tests
-        run: dotnet test .\ScheduleAssistant.sln --configuration Release --no-build --no-restore --nologo --logger trx --results-directory .\TestResults
+        run: dotnet test .\ScheduleAssistant.sln --configuration Release --no-build --no-restore --nologo --logger trx --logger 'console;verbosity=detailed' --results-directory .\TestResults -m:1 --blame-hang --blame-hang-timeout 2m --blame-hang-dump-type none
 
       - name: Upload test results
         if: always()

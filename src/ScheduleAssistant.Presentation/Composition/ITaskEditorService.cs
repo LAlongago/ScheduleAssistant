@@ -18,6 +18,12 @@ public interface ITaskEditorService
 
     /// <summary>Opens an editor for an existing ordinary task.</summary>
     Task OpenEditAsync(Guid taskId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Opens an existing task only when its initialization succeeds; missing or deleted tasks return false
+    /// without displaying an empty editor.
+    /// </summary>
+    Task<bool> TryOpenEditAsync(Guid taskId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Describes a task-editor save and preserves the Application refresh signal.</summary>

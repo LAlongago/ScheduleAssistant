@@ -104,5 +104,11 @@ public sealed class ShellViewModelTests
         {
             return Task.CompletedTask;
         }
+
+        public Task<bool> TryOpenEditAsync(Guid taskId, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(true);
+        }
     }
 }

@@ -423,6 +423,8 @@ public sealed class MonthPageViewModelTests
             action();
             return Task.CompletedTask;
         }
+
+        public Task InvokeAsync(Func<Task> action) => action();
     }
 
     private sealed class FixedTimeProvider : TimeProvider

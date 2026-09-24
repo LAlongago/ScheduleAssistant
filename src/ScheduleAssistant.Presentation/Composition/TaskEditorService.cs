@@ -57,6 +57,29 @@ public sealed class TaskEditorService : ITaskEditorService
         await OpenAsync(viewModel, cancellationToken).ConfigureAwait(true);
     }
 
+    /// <inheritdoc />
+    public async Task<bool> TryOpenEditAsync(Guid taskId, CancellationToken cancellationToken = default)
+    {
+        var viewModel = CreateViewModel(TaskEditorRequest.Edit(taskId));
+        viewModel.Saved += OnViewModelSaved;
+        try
+        {
+            await viewModel.InitializeAsync(cancellationToken).ConfigureAwait(true);
+            if (!viewModel.IsInitialized)
+            {
+                return false;
+            }
+
+            var window = _windowFactory.Create(viewModel);
+            window.ShowDialog();
+            return true;
+        }
+        finally
+        {
+            viewModel.Saved -= OnViewModelSaved;
+        }
+    }
+
     private TaskEditorViewModel CreateViewModel(TaskEditorRequest request)
     {
         return new TaskEditorViewModel(
