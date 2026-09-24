@@ -79,10 +79,13 @@ public sealed class NotificationActivationRouter
                         .TryOpenEditAsync(taskId, CancellationToken.None);
                     if (!opened)
                     {
-                        _logger.LogInformation(
-                            "Notification activation task was unavailable; task {TaskId}, status {Status}.",
-                            taskId,
-                            "not-found-or-unavailable");
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            _logger.LogInformation(
+                                "Notification activation task was unavailable; task {TaskId}, status {Status}.",
+                                taskId,
+                                "not-found-or-unavailable");
+                        }
                     }
                 }
             }).ConfigureAwait(false);

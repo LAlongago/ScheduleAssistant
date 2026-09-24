@@ -27,6 +27,12 @@
 - 三组已报告通过的范围：临近提醒通知显示中文标题及 Deadline；运行中与冷启动通知激活打开正确任务且保持单实例；关闭通知权限时 Reminder 保持 Pending，重新允许并恢复后继续调度。
 - 本次自动验证不能观测通知中心展示和用户权限 UI。独立 Windows 10 与全新无 Windows App Runtime 的机器仍没有验证证据，详见 ADR-003。
 
+## PR CI 首次结果与修正
+
+- PR #16 首次 CI run `35948715049` 的 Release build 因 `NotificationActivationRouter` 的 CA1873 分析器诊断失败，GitHub Actions 未进入测试阶段。
+- 在无任务可打开时的安全诊断日志外加 `_logger.IsEnabled(LogLevel.Information)` 检查，避免日志级别关闭时仍构造日志参数；不改变激活路由或日志字段。
+- 修正后已在本地重跑 Release solution build、四个指定测试项目和 WPF 启动/单实例/正常退出 smoke，均通过。修正后的 PR CI 状态在交付回复中报告。
+
 ## 验证命令与结果
 
 以下命令在整合 worktree 根目录执行，使用项目 SDK `10.0.100`：
