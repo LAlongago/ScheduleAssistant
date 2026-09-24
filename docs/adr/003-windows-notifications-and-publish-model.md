@@ -1,6 +1,6 @@
 # ADR-003：Windows 本地通知与发布模型
 
-- Status: DEV-081 已实现；INTEGRATION-012 增加显式 Runtime 初始化；负责人报告 DEV-081 的三组 Windows 人工验收已完成
+- Status: DEV-081 已整合；VALIDATION-081-RUNTIME 负责人报告 Windows 11 build 26200 framework-dependent 显式 Runtime 初始化复验通过；全新无 Runtime 和独立 Windows 10 环境仍未验证
 - Date: 2026-09-17
 - Owners: ScheduleAssistant 工程
 - Related task(s): SPIKE-001, DEV-081；DEV-080 不在本实验范围
@@ -51,6 +51,7 @@
 - 实验原型和可重复命令：`spikes/SPIKE-001/README.md`。
 - 场景、环境、产物体积和限制：`docs/test-reports/SPIKE-001-validation.md`。
 - DEV-081 自动化测试、Release 构建与 WPF 启动/单实例/正常关闭 smoke 记录：`docs/handoffs/DEV-081.md`。
+- VALIDATION-081-RUNTIME 的显式 Runtime 初始化 Release build、WPF smoke 与人工复验：docs/test-reports/DEV-081-runtime-revalidation.md。
 - 官方依据：[WPF app notifications](https://learn.microsoft.com/en-us/windows/apps/develop/notifications/app-notifications/app-notifications-dotnet)、[notifications overview](https://learn.microsoft.com/en-us/windows/apps/develop/notifications/)、[deployment overview](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/deploy-overview)、[self-contained deployment](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/self-contained-deploy/deploy-self-contained-apps)。
 - 选定 NuGet 包：[Microsoft.WindowsAppSDK 2.4.0](https://packages.nuget.org/packages/Microsoft.WindowsAppSDK/2.4.0)。
 
@@ -62,7 +63,7 @@ DEV-081 的三组人工验收由负责人报告已完成；本次整合未重新
 
 SPIKE-001 已验证 Windows 11 25H2；DEV-081 的人工验收由负责人报告完成，但本次整合未复测通知展示、激活或权限切换。独立 Windows 10 和全新无运行时环境仍没有证据，不能据此声称这些环境已通过。不得通过卸载本机运行时制造“干净环境”。
 
-INTEGRATION-012 的本地 Release solution build、完整测试及 WPF 启停/单实例 smoke 已通过。此前 PR CI 的 Presentation 测试挂起与 SDK 自动 bootstrap 在缺失匹配 Runtime 时可能显示 UI 的路径吻合；整合分支改为显式无 UI 初始化，最终 PR CI 结论以交付输出为准。此修正之后没有重做通知点击、权限切换或全新无 Runtime 机器的人工验证，不能把原有 DEV-081 人工验收视为新路径的独立验证。
+INTEGRATION-012 的本地 Release solution build、完整测试及 WPF 启停/单实例 smoke 已通过。Presentation CI 挂起与 SDK 自动 bootstrap 的交互提示路径相符；整合通过显式无 UI Bootstrap.TryInitialize 处理 framework-dependent 启动。VALIDATION-081-RUNTIME 于 2026-09-24 在 Windows 11 专业版 x64 build 26200 上完成 framework-dependent Release build 与 WPF/单实例/正常退出 smoke；负责人报告实际通知展示、运行中点击、冷启动点击及关闭权限后 Pending 保持、重新允许并重启后恢复调度三组人工复验均通过。人工结论来源和自动化观察边界详见 docs/test-reports/DEV-081-runtime-revalidation.md。全新无 Runtime 机器和独立 Windows 10 环境仍未验证。
 
 ## Revisit criteria
 
